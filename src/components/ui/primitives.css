@@ -1,0 +1,290 @@
+/* UI Primitives CSS */
+.ui-panel {
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+  position: relative;
+  box-shadow: var(--shadow-subtle);
+}
+
+.ui-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  gap: var(--space-2);
+}
+
+.ui-panel-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-chip);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  line-height: var(--leading-tight);
+}
+
+.ui-badge-critical {
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--severity-critical);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.ui-badge-high {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--severity-high);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.ui-badge-medium {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--severity-medium);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.ui-badge-low {
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--severity-low);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.ui-badge-simulated {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--severity-high);
+  border: 1px dashed var(--severity-high);
+  font-size: 11px;
+  padding: 2px 6px;
+  letter-spacing: 0.02em;
+}
+
+.ui-badge-planned {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--color-text-small);
+  border: 1px solid var(--color-border);
+}
+
+.ui-badge-active {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--accent-green);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-chip);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  padding: var(--space-2) var(--space-3);
+  min-height: 36px;
+  text-decoration: none;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.ui-btn-primary {
+  background: var(--accent-cyan);
+  color: var(--color-base);
+  border-color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.ui-btn-primary:hover:not(:disabled) {
+  background: #06b6d4;
+  border-color: #06b6d4;
+}
+
+.ui-btn-secondary {
+  background: var(--color-raised);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.ui-btn-secondary:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.ui-btn-outline {
+  border-color: var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.ui-btn-outline:hover:not(:disabled) {
+  border-color: var(--color-text-small);
+}
+
+.ui-btn-danger {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--severity-critical);
+  color: var(--severity-critical);
+}
+
+.ui-btn-icon {
+  padding: var(--space-2);
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.ui-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Modals & Drawers - Glass effect strictly on overlays */
+.ui-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 11, 20, 0.75);
+  backdrop-filter: var(--overlay-backdrop);
+  -webkit-backdrop-filter: var(--overlay-backdrop);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.ui-modal {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-modal);
+  box-shadow: var(--shadow-overlay);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-5);
+  z-index: 1001;
+}
+
+.ui-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 520px;
+  background: var(--color-panel);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-overlay);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+/* Tooltip */
+.ui-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ui-tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 500;
+  box-shadow: var(--shadow-subtle);
+}
+
+/* DataTable */
+.ui-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.ui-table th {
+  background: var(--color-raised);
+  color: var(--color-text-small);
+  font-weight: 600;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  user-select: none;
+}
+
+.ui-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text);
+}
+
+.ui-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Skeleton */
+.ui-skeleton {
+  background: linear-gradient(90deg, var(--color-raised) 25%, var(--color-border) 50%, var(--color-raised) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s infinite;
+  border-radius: var(--radius-chip);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* States */
+.ui-empty-state, .ui-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--color-text-small);
+  gap: var(--space-3);
+}
+
+.ui-error-state {
+  color: var(--severity-critical);
+}

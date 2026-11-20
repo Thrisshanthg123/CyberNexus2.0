@@ -1,0 +1,82 @@
+/* CyberCharts CSS */
+.cyber-chart-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Radar Animation */
+.radar-sweep-arm {
+  transform-origin: 200px 200px;
+  animation: radar-sweep 5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Radar Critical Blip Pulse */
+.blip-pulse {
+  animation: radar-blip-pulse 1.8s ease-out infinite;
+}
+
+@keyframes radar-blip-pulse {
+  0% {
+    r: 6px;
+    opacity: 1;
+  }
+  50% {
+    r: 12px;
+    opacity: 0.4;
+  }
+  100% {
+    r: 16px;
+    opacity: 0;
+  }
+}
+
+/* Radar Blip Interaction */
+.radar-blip-node {
+  cursor: pointer;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.radar-blip-node:hover,
+.radar-blip-node:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 6px var(--accent-cyan));
+}
+
+/* Heatmap cell hover */
+.heatmap-cell {
+  cursor: pointer;
+  transition: opacity var(--transition-fast), stroke var(--transition-fast);
+}
+
+.heatmap-cell:hover,
+.heatmap-cell:focus-visible {
+  outline: none;
+  stroke: var(--accent-cyan) !important;
+  stroke-width: 2px !important;
+}
+
+/* Reduced motion disables sweep and pulses */
+@media (prefers-reduced-motion: reduce) {
+  .radar-sweep-arm {
+    animation: none !important;
+    display: none;
+  }
+  .blip-pulse {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
