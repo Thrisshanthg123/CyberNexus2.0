@@ -1,0 +1,203 @@
+/* Landing Page Styling */
+.landing-root {
+  min-height: 100vh;
+  background-color: var(--color-base);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Landing Navigation */
+.landing-nav {
+  height: 72px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  background-color: rgba(6, 11, 20, 0.8);
+  backdrop-filter: var(--overlay-backdrop);
+  -webkit-backdrop-filter: var(--overlay-backdrop);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.landing-nav-links a {
+  color: var(--color-text-small);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.landing-nav-links a:hover {
+  color: var(--accent-cyan);
+}
+
+/* Hero Section */
+.landing-hero {
+  padding: 100px var(--space-6) 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-radar-motif {
+  width: 280px;
+  height: 280px;
+  margin-bottom: var(--space-5);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-h1 {
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-4);
+  max-width: 900px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-hero-desc {
+  font-size: var(--text-base);
+  color: var(--color-text-small);
+  max-width: 680px;
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-relaxed);
+}
+
+/* Sections */
+.landing-section {
+  padding: 80px var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.landing-section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-2);
+}
+
+.section-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Capabilities Grid */
+.capabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.cap-card {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.cap-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+/* Pipeline Steps (How it Works) */
+.pipeline-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  position: relative;
+}
+
+.pipeline-step-card {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+  position: relative;
+}
+
+.step-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-cyan);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+/* Team Grid */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.team-card {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+/* Footer */
+.landing-footer {
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-6);
+  background-color: var(--color-panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-small);
+}
+
+@media (max-width: 768px) {
+  .landing-nav-links {
+    display: none;
+  }
+  .landing-hero {
+    padding: 60px var(--space-4) 40px;
+  }
+  .landing-section {
+    padding: 50px var(--space-4);
+  }
+}
