@@ -30,11 +30,12 @@ export interface BadgeProps {
   children: ReactNode;
   className?: string;
   title?: string;
+  style?: React.CSSProperties;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ variant = 'default', children, className = '', title }) => {
+export const Badge: React.FC<BadgeProps> = ({ variant = 'default', children, className = '', title, style }) => {
   return (
-    <span className={`ui-badge ui-badge-${variant} ${className}`} title={title}>
+    <span className={`ui-badge ui-badge-${variant} ${className}`} title={title} style={style}>
       {variant === 'simulated' && <span aria-hidden="true" style={{ fontSize: '10px' }}>⚡</span>}
       {children}
     </span>
