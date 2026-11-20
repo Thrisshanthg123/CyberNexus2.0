@@ -52,17 +52,15 @@ export const LandingPage: React.FC = () => {
         <section className="landing-hero" aria-labelledby="hero-title">
           {/* Calm SVG Radar Motif */}
           <div className="hero-radar-motif" aria-hidden="true">
-            <svg width="240" height="240" viewBox="0 0 240 240">
-              <circle cx="120" cy="120" r="100" fill="none" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx="120" cy="120" r="70" fill="none" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx="120" cy="120" r="40" fill="none" stroke="var(--color-border)" strokeWidth="1" />
-              <circle cx="120" cy="120" r="8" fill="var(--accent-cyan)" />
-              <line x1="120" y1="20" x2="120" y2="220" stroke="var(--color-border)" strokeWidth="1" />
-              <line x1="20" y1="120" x2="220" y2="120" stroke="var(--color-border)" strokeWidth="1" />
-              <circle cx="160" cy="80" r="4" fill="var(--severity-critical)" />
-              <circle cx="85" cy="150" r="4" fill="var(--severity-high)" />
-              <circle cx="140" cy="170" r="3.5" fill="var(--severity-medium)" />
-              <circle cx="70" cy="90" r="3" fill="var(--accent-green)" />
+            <svg width="220" height="220" viewBox="0 0 220 220">
+              <circle cx="110" cy="110" r="90" fill="none" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx="110" cy="110" r="45" fill="none" stroke="var(--color-border)" strokeWidth="1" />
+              <circle cx="110" cy="110" r="6" fill="var(--accent-cyan)" />
+              <line x1="110" y1="20" x2="110" y2="200" stroke="var(--color-border)" strokeWidth="1" />
+              <line x1="20" y1="110" x2="200" y2="110" stroke="var(--color-border)" strokeWidth="1" />
+              <circle cx="150" cy="70" r="4" fill="var(--severity-critical)" />
+              <circle cx="75" cy="140" r="4" fill="var(--severity-high)" />
+              <circle cx="130" cy="155" r="3.5" fill="var(--severity-medium)" />
             </svg>
           </div>
 

@@ -124,7 +124,7 @@ export const LiveFeedPage: React.FC = () => {
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'nowrap', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
           {/* Severity selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)' }}>Severity:</span>

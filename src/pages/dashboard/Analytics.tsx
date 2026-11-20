@@ -87,7 +87,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Real Date Range Filter Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', background: 'var(--color-panel)', padding: 'var(--space-1)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', background: 'var(--color-panel)', padding: 'var(--space-1)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', overflowX: 'auto', maxWidth: '100%' }}>
           <Calendar size={14} style={{ color: 'var(--color-text-small)', marginLeft: 'var(--space-2)' }} />
           <Button
             variant={dateRange === '24h' ? 'primary' : 'outline'}
