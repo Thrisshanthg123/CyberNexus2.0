@@ -221,7 +221,7 @@ export const LiveFeedPage: React.FC = () => {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexShrink: 0, marginLeft: 'var(--space-3)' }}>
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-                    {threat.confidence}% conf
+                    {threat.confidence !== null && threat.confidence !== undefined ? `${threat.confidence}% conf` : 'Not yet analysed'}
                   </span>
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
                     {new Date(threat.timestamp).toLocaleTimeString()}
@@ -279,7 +279,7 @@ export const LiveFeedPage: React.FC = () => {
               <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', textTransform: 'uppercase', marginBottom: '4px' }}>
                 Remediation & Mitigation
               </h4>
-              <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 'var(--space-3)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}>
+              <div style={{ background: 'var(--accent-emerald-tint)', padding: 'var(--space-3)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--border-subtle-color)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}>
                 {selectedThreat.mitigation}
               </div>
             </div>

@@ -1,4 +1,4 @@
-@import './tokens.css';
+@import '../design/tokens.css';
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -9,10 +9,10 @@
 html, body {
   height: 100%;
   width: 100%;
-  background-color: var(--color-base);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-14);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -22,33 +22,39 @@ html, body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-app);
 }
 
-/* Global Focus Ring: 2px cyan, 2px offset */
+/* Global Focus Ring: 2px emerald with 2px offset */
 :focus-visible {
-  outline: 2px solid var(--accent-cyan);
+  outline: 2px solid var(--accent-emerald);
   outline-offset: 2px;
 }
 
-/* Typography styles */
+/* Headings with clear type scale */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--color-text);
+  color: var(--text-primary);
   font-weight: 600;
   line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
 }
 
-h1 { font-size: var(--text-2xl); }
-h2 { font-size: var(--text-xl); }
-h3 { font-size: var(--text-lg); }
-h4 { font-size: var(--text-base); }
+h1 { font-size: var(--text-28); }
+h2 { font-size: var(--text-20); }
+h3 { font-size: var(--text-18); }
+h4 { font-size: var(--text-16); }
+h5 { font-size: var(--text-14); }
+h6 { font-size: var(--text-12); }
 
 p {
-  color: var(--color-text);
+  color: var(--text-secondary);
   line-height: var(--leading-relaxed);
 }
 
-code, pre, kbd, samp, .font-mono {
+/* Monospace font strictly for CVE IDs, IPs, hashes, domains, timestamps */
+code, pre, kbd, samp, .font-mono, [data-mono="true"] {
   font-family: var(--font-mono);
+  font-feature-settings: "liga" 0;
 }
 
 /* Tabular numbers for all metrics */
@@ -56,29 +62,31 @@ code, pre, kbd, samp, .font-mono {
 [data-metric="true"],
 .metric-value {
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
-/* Skip link for a11y */
+/* Skip link for accessibility */
 .skip-link {
   position: absolute;
   top: -9999px;
   left: var(--space-4);
-  background: var(--color-panel);
-  color: var(--accent-cyan);
+  background: var(--bg-surface);
+  color: var(--accent-emerald);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--accent-cyan);
-  border-radius: var(--radius-chip);
+  border: 1px solid var(--accent-emerald);
+  border-radius: var(--radius-sm);
   z-index: 9999;
   text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-size: var(--text-13);
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
 }
 
 .skip-link:focus {
   top: var(--space-4);
 }
 
-/* Utility classes */
+/* Screen reader only utility */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -91,26 +99,26 @@ code, pre, kbd, samp, .font-mono {
   border: 0;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars (light theme) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-base);
+  background: var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-chip);
+  background: #CBD3DD;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: #94A3B8;
 }
 
-/* Reduced motion honoring */
+/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

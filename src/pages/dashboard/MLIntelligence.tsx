@@ -4,7 +4,7 @@ import { Panel, Badge, DataTable, Column } from '../../components/ui';
 import { ThreatRadar } from '../../components/charts/CyberCharts';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
-import { Prediction, ThreatCategory } from '../../types';
+import { Prediction } from '../../types';
 
 export const MLIntelligencePage: React.FC = () => {
   const radarAsync = useAsync(() => api.getRadarBlips());
@@ -16,9 +16,10 @@ export const MLIntelligencePage: React.FC = () => {
 
   // Category counts
   const categoryCounts = predictions.reduce((acc, curr) => {
-    acc[curr.predictedCategory] = (acc[curr.predictedCategory] || 0) + 1;
+    const cat = curr.predictedCategory || 'Unclassified';
+    acc[cat] = (acc[cat] || 0) + 1;
     return acc;
-  }, {} as Record<ThreatCategory, number>);
+  }, {} as Record<string, number>);
 
   const columns: Column<Prediction>[] = [
     {
@@ -229,11 +230,12 @@ export const MLIntelligencePage: React.FC = () => {
         title="Recent Machine Learning Classification Inferences"
         action={<Badge variant="simulated">Simulated data</Badge>}
       >
-        <DataTable
+        <DataTable<Prediction>
           columns={columns}
           data={predictions}
-          keyField="id"
-          emptyMessage="No model predictions available."
+          keyExtractor={p => p.id}
+          emptyTitle="No model predictions available"
+          emptyDescription="Machine learning predictions will appear once models process incoming threat telemetry."
         />
       </Panel>
     </div>

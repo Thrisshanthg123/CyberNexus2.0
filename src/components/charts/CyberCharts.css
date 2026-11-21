@@ -24,19 +24,19 @@
   }
 }
 
-/* Radar Critical Blip Pulse */
+/* Radar Critical Blip Pulse - 2s pulse */
 .blip-pulse {
-  animation: radar-blip-pulse 1.8s ease-out infinite;
+  animation: radar-blip-pulse 2s ease-out infinite;
 }
 
 @keyframes radar-blip-pulse {
   0% {
     r: 6px;
-    opacity: 1;
+    opacity: 0.9;
   }
   50% {
     r: 12px;
-    opacity: 0.4;
+    opacity: 0.3;
   }
   100% {
     r: 16px;

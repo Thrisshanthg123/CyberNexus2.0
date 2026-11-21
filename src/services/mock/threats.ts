@@ -81,6 +81,7 @@ export function generateMockThreats(): Threat[] {
     threats.push({
       id,
       cveId,
+      cve: cveId,
       title: `${vp.vendor} ${vp.product} Remote Code Execution & ${category}`,
       description: `Discovered active exploitation in the wild targeting ${vp.vendor} ${vp.product}. Attackers leverage weaponized payloads matching ${vp.ttp} to bypass authentication controls and achieve initial access. Observed correlation across multiple intelligence feeds.`,
       severity,
@@ -89,6 +90,9 @@ export function generateMockThreats(): Threat[] {
       status,
       timestamp,
       confidence,
+      mlClassification: category,
+      riskScore: Math.floor(68 + rng() * 30),
+      cvssScore: severity === 'critical' ? 9.8 : severity === 'high' ? 8.2 : severity === 'medium' ? 5.5 : 3.1,
       affectedSystems: [
         `${vp.vendor} ${vp.product} v4.2 - v5.8`,
         'Enterprise Edge Gateways',
@@ -100,7 +104,7 @@ export function generateMockThreats(): Threat[] {
         `IOC-${padId}-3`
       ],
       ttp: vp.ttp,
-      tags: ['CISA-KEV', 'Exploited-Wild', 'Zero-Day', vp.vendor.toLowerCase()],
+      tags: i % 11 === 0 ? ['CISA-KEV', 'Exploited-Wild', 'Zero-Day', vp.vendor.toLowerCase()] : ['Advisory', vp.vendor.toLowerCase()],
       actor,
       mitigation: mitigations[i % mitigations.length],
       isSimulated: true

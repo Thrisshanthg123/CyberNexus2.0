@@ -10,7 +10,7 @@ export function generateMockPredictions(): Prediction[] {
       threatId: t.id,
       cveId: t.cveId,
       predictedCategory: t.category as ThreatCategory,
-      confidence: Math.round(t.confidence * 0.95),
+      confidence: Math.round((t.confidence ?? 85) * 0.95),
       model: models[i % models.length],
       timestamp: t.timestamp,
       features: {

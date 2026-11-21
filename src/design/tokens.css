@@ -1,0 +1,155 @@
+/* ============================================================================
+   CYBERNEXUS DESIGN TOKENS - LIGHT ENTERPRISE THEME
+   Location: src/design/tokens.css
+   Modelled on Modern Enterprise SOC / Fintech / SaaS
+   Soft white surfaces, emerald accent, deep-green hero block, friendly rounded cards
+   ============================================================================ */
+
+:root {
+  /* Page & Layout Backgrounds */
+  --bg-app: #F7F9FB;
+  --bg-sidebar: #F1F4F7;
+  --bg-surface: #FFFFFF;
+  --bg-raised: #F3F6F9;
+  --bg-overlay: rgba(255, 255, 255, 0.94);
+  --bg-overlay-dark: #0B1220;
+
+  /* Borders (1px subtle & strong) */
+  --border-subtle-color: #E3E8EE;
+  --border-strong-color: #CBD3DD;
+  --border-focus-color: #059669;
+
+  --border-subtle: 1px solid var(--border-subtle-color);
+  --border-strong: 1px solid var(--border-strong-color);
+  --border-focus: 2px solid var(--border-focus-color);
+
+  /* Typography Colors (WCAG AA compliant on light surfaces) */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #5B6779;
+  --text-dim: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  /* Accent: Emerald & Variants */
+  --accent-emerald: #059669;
+  --accent-emerald-hover: #047857;
+  --accent-emerald-tint: #E7F6EF;
+  --accent-cyan: #059669; /* Mapped to emerald */
+  --accent-blue: #2563EB;
+  --accent-blue-secondary: #2563EB;
+  --accent-blue-tint: #E8F0FE;
+  --accent-purple: #7C3AED;
+  --accent-purple-tint: #F1EAFE;
+  --accent-amber-tint: #FEF3E2;
+
+  /* Hero Gradient */
+  --hero-gradient: linear-gradient(135deg, #065F46 0%, #0F766E 100%);
+
+  /* Alert Banner (Rose) */
+  --alert-banner-bg: #E11D48;
+  --alert-banner-text: #FFFFFF;
+
+  /* Severity Marks (Dots/Bars/Charts - passing >= 3:1 on white) */
+  --severity-critical: #DC2626;
+  --severity-critical-tint: #FDECEC;
+  --severity-critical-text: #B91C1C; /* 6.47:1 on white, 5.66:1 on tint */
+  
+  --severity-high: #D97706;
+  --severity-high-tint: #FEF3E2;
+  --severity-high-text: #B45309; /* 5.02:1 on white, 4.58:1 on tint */
+  
+  --severity-medium: #B45309;
+  --severity-medium-tint: #FEF7D6;
+  --severity-medium-text: #A16207; /* 4.92:1 on white, 4.57:1 on tint */
+  
+  --severity-low: #16A34A;
+  --severity-low-tint: #E7F6EF;
+  --severity-low-text: #15803D; /* 5.02:1 on white, 4.50:1 on tint */
+
+  --accent-emerald-text: #047857; /* 5.48:1 on white */
+
+  /* Semantic Status */
+  --status-success: #16A34A;
+  --status-warning: #D97706;
+  --status-danger: #DC2626;
+  --status-info: #2563EB;
+
+  /* Shadows (Cards & Overlays) */
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04);
+  --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-overlay: 0 20px 40px rgba(15, 23, 42, 0.12), 0 0 0 1px #CBD3DD;
+
+  /* Radius Scale: chips 999px or 6px, inputs 10px, cards 16px, modals 20px */
+  --radius-chip: 999px;
+  --radius-sm: 6px;
+  --radius-input: 10px;
+  --radius-md: 16px;   /* Cards & Panels */
+  --radius-lg: 20px;   /* Modals & Drawers */
+
+  /* Spacing Scale (4px base grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Typography */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Type Scale */
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-28: 28px;
+  --text-32: 32px;
+
+  /* Type aliases */
+  --text-xs: var(--text-12);
+  --text-sm: var(--text-14);
+  --text-base: var(--text-16);
+  --text-lg: var(--text-20);
+  --text-xl: var(--text-28);
+  --text-2xl: var(--text-32);
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* Transitions & Motion */
+  --motion-fast: 150ms ease;
+  --motion-normal: 200ms ease;
+  --transition-fast: var(--motion-fast);
+  --transition-normal: var(--motion-normal);
+  --radar-sweep-duration: 8s;
+
+  /* Glass blur on overlay */
+  --overlay-backdrop: blur(12px);
+
+  /* Legacy variable mappings for seamless compatibility */
+  --color-base: var(--bg-app);
+  --color-panel: var(--bg-surface);
+  --color-raised: var(--bg-raised);
+  --color-border: var(--border-subtle-color);
+  --color-border-subtle: var(--border-subtle-color);
+  --color-border-focus: var(--accent-emerald);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-small: var(--text-secondary);
+  --color-text-dim: var(--text-dim);
+  --accent-green: var(--status-success);
+  --radius-panel: var(--radius-md);
+  --radius-modal: var(--radius-lg);
+  --shadow-none: none;
+}

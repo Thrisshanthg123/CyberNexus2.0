@@ -1,0 +1,252 @@
+/* ============================================================================
+   CYBERNEXUS EXECUTIVE OVERVIEW CSS
+   Location: src/pages/dashboard/Overview.css
+   Strict Enterprise Calm Command Center - Light Theme
+   ============================================================================ */
+
+.overview-container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+}
+
+/* Deep Green Hero Banner */
+.overview-hero-banner {
+  background: var(--hero-gradient);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  box-shadow: 0 4px 20px rgba(6, 95, 70, 0.12);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.overview-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 1;
+  min-width: 0;
+  flex: 1;
+}
+
+.overview-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 12px;
+  border-radius: var(--radius-chip);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #FFFFFF;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.overview-hero-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #34D399;
+}
+
+.overview-hero-dot.pulse {
+  background: #34D399;
+  box-shadow: 0 0 8px #34D399;
+  animation: hero-dot-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.overview-hero-dot.offline {
+  background: #94A3B8;
+  box-shadow: none;
+}
+
+@keyframes hero-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+.overview-hero-title {
+  font-size: var(--text-24);
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.overview-hero-subtitle {
+  font-size: var(--text-14);
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 640px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.overview-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.overview-hero-btn-primary {
+  background: #FFFFFF;
+  color: #065F46;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+
+.overview-hero-btn-primary:hover {
+  background: #F8FAFC;
+  transform: translateY(-1px);
+}
+
+.overview-hero-btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.overview-hero-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 900px) {
+  .overview-hero-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-5);
+  }
+  .overview-hero-actions {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+  .overview-hero-btn-primary,
+  .overview-hero-btn-secondary {
+    flex: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .overview-hero-banner {
+    padding: var(--space-4);
+  }
+  .overview-hero-title {
+    font-size: var(--text-18);
+  }
+  .overview-hero-subtitle {
+    font-size: var(--text-13);
+  }
+  .overview-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .overview-hero-btn-primary,
+  .overview-hero-btn-secondary {
+    width: 100%;
+  }
+}
+
+/* 5-Column KPI Strip */
+.overview-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .overview-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .overview-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .overview-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Main Hero Grid: Left Hero Radar (7fr) + Right Stack (5fr) */
+.overview-hero-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--space-4);
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.radar-hero-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .overview-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}

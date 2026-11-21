@@ -4,11 +4,12 @@ import {
   Area,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer
 } from 'recharts';
 import { Skeleton, EmptyState, ErrorState } from '../ui';
-import { RadarBlip, SeverityStat, FlowLink, Severity, ThreatCategory } from '../../types';
+import { RadarBlip, SeverityStat, FlowLink, Severity } from '../../types';
 import { HeatmapCell } from '../../services/mock/activityMatrix';
 import { TrendDay } from '../../services/mock/trend14d';
 import './CyberCharts.css';
@@ -50,19 +51,17 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
   onRetry,
   onBlipClick,
   colourBy = 'severity',
-  width = 400,
-  height = 400
+  width = 440,
+  height = 440
 }) => {
   const [hoveredBlip, setHoveredBlip] = useState<RadarBlip | null>(null);
   const chartId = useId();
 
-  const colorCritical = useCssVar('--severity-critical', '#F43F5E');
-  const colorHigh = useCssVar('--severity-high', '#F59E0B');
-  const colorMedium = useCssVar('--severity-medium', '#3B82F6');
-  const colorLow = useCssVar('--severity-low', '#34D399');
+  const colorCritical = useCssVar('--severity-critical', '#DC2626');
+  const colorHigh = useCssVar('--severity-high', '#D97706');
+  const colorMedium = useCssVar('--severity-medium', '#CA8A04');
+  const colorLow = useCssVar('--severity-low', '#16A34A');
   const colorCyan = useCssVar('--accent-cyan', '#22D3EE');
-  const colorBorder = useCssVar('--color-border', '#1B2740');
-  const colorMuted = useCssVar('--color-text-muted', '#64748B');
 
   if (loading) {
     return <Skeleton width={width} height={height} borderRadius="50%" />;
@@ -78,18 +77,20 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
 
   const cx = width / 2;
   const cy = height / 2;
-  const maxRadius = Math.min(cx, cy) - 20;
+  const maxRadius = Math.min(cx, cy) - 16;
 
   const getBlipColor = (blip: RadarBlip) => {
     if (colourBy === 'category') {
-      const catColors: Record<ThreatCategory, string> = {
+      const catColors: Record<string, string> = {
         'Zero-Day': colorCritical,
         'Ransomware': colorHigh,
         'Supply Chain': colorCyan,
         'Data Exfiltration': colorMedium,
         'Privilege Escalation': colorHigh,
         'Botnet': colorLow,
-        'Phishing': colorMuted
+        'Phishing': '#8A9BB4',
+        'Vulnerability-Disclosure': colorCyan,
+        'Exploit-in-Wild': colorCritical
       };
       return catColors[blip.category] || colorCyan;
     }
@@ -103,37 +104,44 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
     return sevColors[blip.severity] || colorCyan;
   };
 
+  const getBlipRadius = (sev: Severity) => {
+    switch (sev) {
+      case 'critical': return 4.5;
+      case 'high': return 3.5;
+      case 'medium': return 2.5;
+      case 'low': return 2;
+    }
+  };
+
   const criticalCount = data.filter(b => b.severity === 'critical').length;
   const totalCount = data.length;
+
+  // 60-degree sweep sector: sin(60°) = 0.866, cos(60°) = 0.5
+  const sweepEndX = cx + maxRadius * 0.866;
+  const sweepEndY = cy - maxRadius * 0.5;
 
   return (
     <div
       className="cyber-chart-wrapper"
       role="img"
       aria-label={`Threat Radar showing ${totalCount} active correlated threats, including ${criticalCount} critical blips in the central perimeter ring.`}
+      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}
         width="100%"
         height="100%"
-        style={{ maxWidth: `${width}px`, aspectRatio: '1/1', overflow: 'visible' }}
+        style={{ maxWidth: `${width}px`, maxHeight: `${height}px`, aspectRatio: '1/1', overflow: 'visible' }}
       >
         <defs>
-          <radialGradient id={`radar-grad-${chartId}`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={colorCyan} stopOpacity="0.08" />
-            <stop offset="60%" stopColor={colorCyan} stopOpacity="0.02" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-          </radialGradient>
           <linearGradient id={`radar-sweep-grad-${chartId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={colorCyan} stopOpacity="0.35" />
+            <stop offset="0%" stopColor={colorCyan} stopOpacity="0.25" />
+            <stop offset="60%" stopColor={colorCyan} stopOpacity="0.08" />
             <stop offset="100%" stopColor={colorCyan} stopOpacity="0" />
           </linearGradient>
         </defs>
 
-        {/* Radar Background Glow */}
-        <circle cx={cx} cy={cy} r={maxRadius} fill={`url(#radar-grad-${chartId})`} />
-
-        {/* Concentric Severity Rings */}
+        {/* Concentric Severity Rings at 6% Opacity */}
         {[0.25, 0.5, 0.75, 1.0].map((fraction, i) => (
           <circle
             key={i}
@@ -141,58 +149,33 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
             cy={cy}
             r={maxRadius * fraction}
             fill="none"
-            stroke={colorBorder}
+            stroke="rgba(255, 255, 255, 0.06)"
             strokeWidth={1}
-            strokeDasharray={fraction === 1.0 ? 'none' : '3 3'}
+            strokeDasharray={fraction === 1.0 ? 'none' : '2 3'}
           />
         ))}
 
-        {/* Ring Labels */}
-        <text x={cx + 6} y={cy - maxRadius * 0.25 + 12} fill={colorCritical} fontSize="9" fontFamily="var(--font-mono)">CRIT</text>
-        <text x={cx + 6} y={cy - maxRadius * 0.50 + 12} fill={colorHigh} fontSize="9" fontFamily="var(--font-mono)">HIGH</text>
-        <text x={cx + 6} y={cy - maxRadius * 0.75 + 12} fill={colorMedium} fontSize="9" fontFamily="var(--font-mono)">MED</text>
-        <text x={cx + 6} y={cy - maxRadius * 1.0 + 12} fill={colorLow} fontSize="9" fontFamily="var(--font-mono)">LOW</text>
+        {/* Crosshair Axes at 6% Opacity */}
+        <line x1={cx} y1={cy - maxRadius} x2={cx} y2={cy + maxRadius} stroke="rgba(255, 255, 255, 0.06)" strokeWidth={1} />
+        <line x1={cx - maxRadius} y1={cy} x2={cx + maxRadius} y2={cy} stroke="rgba(255, 255, 255, 0.06)" strokeWidth={1} />
 
-        {/* Crosshair Axes */}
-        <line x1={cx} y1={cy - maxRadius} x2={cx} y2={cy + maxRadius} stroke={colorBorder} strokeWidth={1} />
-        <line x1={cx - maxRadius} y1={cy} x2={cx + maxRadius} y2={cy} stroke={colorBorder} strokeWidth={1} />
-
-        {/* 45 degree diagonals */}
-        <line
-          x1={cx - maxRadius * 0.707}
-          y1={cy - maxRadius * 0.707}
-          x2={cx + maxRadius * 0.707}
-          y2={cy + maxRadius * 0.707}
-          stroke={colorBorder}
-          strokeWidth={0.5}
-          strokeDasharray="2 4"
-        />
-        <line
-          x1={cx - maxRadius * 0.707}
-          y1={cy + maxRadius * 0.707}
-          x2={cx + maxRadius * 0.707}
-          y2={cy - maxRadius * 0.707}
-          stroke={colorBorder}
-          strokeWidth={0.5}
-          strokeDasharray="2 4"
-        />
-
-        {/* Rotating Radar Sweep */}
+        {/* Rotating 60-degree Radar Sweep */}
         <g className="radar-sweep-arm" style={{ transformOrigin: `${cx}px ${cy}px` }}>
           <path
-            d={`M ${cx} ${cy} L ${cx} ${cy - maxRadius} A ${maxRadius} ${maxRadius} 0 0 1 ${cx + maxRadius * 0.7} ${cy - maxRadius * 0.7} Z`}
+            d={`M ${cx} ${cy} L ${cx} ${cy - maxRadius} A ${maxRadius} ${maxRadius} 0 0 1 ${sweepEndX} ${sweepEndY} Z`}
             fill={`url(#radar-sweep-grad-${chartId})`}
           />
           <line x1={cx} y1={cy} x2={cx} y2={cy - maxRadius} stroke={colorCyan} strokeWidth={1.5} />
         </g>
 
-        {/* Threat Blips */}
+        {/* Threat Blips: 4px to 9px with Critical Pulse */}
         {data.map(blip => {
           const rad = (blip.angle * Math.PI) / 180;
           const r = blip.radius * maxRadius;
           const bx = cx + r * Math.cos(rad);
           const by = cy + r * Math.sin(rad);
           const blipColor = getBlipColor(blip);
+          const blipRadius = getBlipRadius(blip.severity);
 
           return (
             <g
@@ -221,13 +204,13 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
                   className="blip-pulse"
                   fill="none"
                   stroke={blipColor}
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
               )}
               <circle
                 cx={bx}
                 cy={by}
-                r={blip.severity === 'critical' ? 5 : 4}
+                r={blipRadius}
                 fill={blipColor}
                 stroke="#060B14"
                 strokeWidth={1.5}
@@ -237,36 +220,36 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
         })}
       </svg>
 
-      {/* Hover Info Tooltip */}
+      {/* Hover Info Tooltip (Only on hover/focus) */}
       {hoveredBlip && (
         <div
           style={{
             position: 'absolute',
-            bottom: 'var(--space-2)',
+            bottom: '8px',
             background: 'var(--color-raised)',
             border: '1px solid var(--color-border)',
-            padding: 'var(--space-2) var(--space-3)',
+            padding: '6px 10px',
             borderRadius: 'var(--radius-chip)',
-            fontSize: 'var(--text-xs)',
+            fontSize: '12px',
             pointerEvents: 'none',
-            zIndex: 10,
+            zIndex: 20,
             maxWidth: '300px',
             boxShadow: 'var(--shadow-overlay)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: '2px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '11px' }}>
               {hoveredBlip.threatId}
             </span>
-            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-small)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-small)', fontSize: '11px' }}>
               {hoveredBlip.cveId}
             </span>
           </div>
-          <div style={{ color: 'var(--color-text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ color: 'var(--color-text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px' }}>
             {hoveredBlip.title}
           </div>
-          <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: '4px' }}>
-            <span style={{ color: getBlipColor(hoveredBlip), textTransform: 'uppercase', fontWeight: 600 }}>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px', fontSize: '11px' }}>
+            <span style={{ color: getBlipColor(hoveredBlip), textTransform: 'capitalize', fontWeight: 600 }}>
               {hoveredBlip.severity}
             </span>
             <span style={{ color: 'var(--color-text-small)' }}>•</span>
@@ -302,11 +285,10 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
 }) => {
   const [activeItem, setActiveItem] = useState<SeverityStat | null>(null);
 
-  const colorCritical = useCssVar('--severity-critical', '#F43F5E');
-  const colorHigh = useCssVar('--severity-high', '#F59E0B');
-  const colorMedium = useCssVar('--severity-medium', '#3B82F6');
-  const colorLow = useCssVar('--severity-low', '#34D399');
-  const colorBorder = useCssVar('--color-border', '#1B2740');
+  const colorCritical = useCssVar('--severity-critical', '#DC2626');
+  const colorHigh = useCssVar('--severity-high', '#D97706');
+  const colorMedium = useCssVar('--severity-medium', '#CA8A04');
+  const colorLow = useCssVar('--severity-low', '#16A34A');
 
   if (loading) return <Skeleton width={size} height={size} borderRadius="50%" />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
@@ -332,8 +314,9 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
       aria-label={`Concentric Severity Rings: ${data.map(d => `${d.severity}: ${d.count} (${d.percentage}%)`).join(', ')}`}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Concentric Severity Rings */}
         {data.map((item, idx) => {
-          const r = center - 16 - idx * (strokeWidth + gap);
+          const r = center - 14 - idx * (strokeWidth + gap);
           const circumference = 2 * Math.PI * r;
           const strokeDashoffset = circumference - (circumference * item.percentage) / 100;
           const strokeColor = colorMap[item.severity];
@@ -350,13 +333,13 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
               onBlur={() => setActiveItem(null)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Background Track */}
+              {/* Background Track in Light Subtle Gray */}
               <circle
                 cx={center}
                 cy={center}
                 r={r}
                 fill="none"
-                stroke={colorBorder}
+                stroke="#EEF2F6"
                 strokeWidth={strokeWidth}
               />
               {/* Progress Arc */}
@@ -379,24 +362,24 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
         {/* Center Text */}
         <text
           x={center}
-          y={center - 4}
+          y={center + 2}
           textAnchor="middle"
           fill="var(--color-text)"
-          fontSize="18"
+          fontSize="24"
           fontWeight="700"
-          fontFamily="var(--font-mono)"
+          fontFamily="var(--font-sans)"
           className="tabular-nums"
         >
           {activeItem ? activeItem.count : total}
         </text>
         <text
           x={center}
-          y={center + 14}
+          y={center + 18}
           textAnchor="middle"
           fill="var(--color-text-small)"
-          fontSize="10"
-          fontFamily="var(--font-sans)"
-          style={{ textTransform: 'uppercase' }}
+          fontSize="11"
+          fontFamily="var(--font-mono)"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}
         >
           {activeItem ? activeItem.severity : 'TOTAL'}
         </text>
@@ -709,14 +692,19 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
   onRetry,
   height = 180
 }) => {
-  const colorCyan = useCssVar('--accent-cyan', '#22D3EE');
-  const colorCritical = useCssVar('--severity-critical', '#F43F5E');
-  const colorTextSmall = useCssVar('--color-text-small', '#8A9BB4');
-  const colorBorder = useCssVar('--color-border', '#1B2740');
+  const colorCyan = useCssVar('--accent-cyan', '#059669');
+  const colorCritical = useCssVar('--severity-critical', '#DC2626');
 
   if (loading) return <Skeleton height={height} />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
-  if (!data || data.length === 0) return <EmptyState title="No Trend History" />;
+  if (!data || data.length === 0 || !data.some(d => (d.total || 0) > 0)) {
+    return (
+      <EmptyState
+        title="No 14-Day Ingestion History"
+        description="Active database records are historical advisories. No new disclosures ingested in the 14-day rolling window."
+      />
+    );
+  }
 
   return (
     <div
@@ -726,28 +714,29 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
       style={{ width: '100%', height }}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
+          <CartesianGrid stroke="#E8EDF2" strokeDasharray="3 3" vertical={false} />
           <defs>
             <linearGradient id="trendCyanGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colorCyan} stopOpacity={0.4} />
+              <stop offset="5%" stopColor={colorCyan} stopOpacity={0.2} />
               <stop offset="95%" stopColor={colorCyan} stopOpacity={0.0} />
             </linearGradient>
             <linearGradient id="trendCritGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colorCritical} stopOpacity={0.4} />
+              <stop offset="5%" stopColor={colorCritical} stopOpacity={0.2} />
               <stop offset="95%" stopColor={colorCritical} stopOpacity={0.0} />
             </linearGradient>
           </defs>
           <XAxis
             dataKey="date"
-            stroke={colorTextSmall}
-            fontSize={10}
+            stroke="#5B6779"
+            fontSize={11}
             fontFamily="var(--font-mono)"
             tickLine={false}
             tickFormatter={val => val.slice(5)}
           />
           <YAxis
-            stroke={colorTextSmall}
-            fontSize={10}
+            stroke="#5B6779"
+            fontSize={11}
             fontFamily="var(--font-mono)"
             tickLine={false}
           />
@@ -758,24 +747,25 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
                 return (
                   <div
                     style={{
-                      background: 'var(--color-raised)',
-                      border: `1px solid ${colorBorder}`,
-                      padding: 'var(--space-2) var(--space-3)',
-                      borderRadius: 'var(--radius-chip)',
-                      fontSize: 'var(--text-xs)',
-                      boxShadow: 'var(--shadow-overlay)'
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #CBD3DD',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
+                      color: '#0F172A'
                     }}
                   >
-                    <div style={{ color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
+                    <div style={{ color: '#5B6779', fontFamily: 'var(--font-mono)', marginBottom: '4px', fontSize: '11px' }}>
                       {label}
                     </div>
-                    <div style={{ color: colorCyan, fontWeight: 600 }}>
+                    <div style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>
                       Total Threats: {day.total}
                     </div>
-                    <div style={{ color: colorCritical }}>
+                    <div style={{ color: 'var(--severity-critical)', fontWeight: 500 }}>
                       Critical: {day.critical}
                     </div>
-                    <div style={{ color: 'var(--severity-high)' }}>
+                    <div style={{ color: 'var(--severity-high)', fontWeight: 500 }}>
                       High: {day.high}
                     </div>
                   </div>
@@ -788,7 +778,7 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
             type="monotone"
             dataKey="total"
             stroke={colorCyan}
-            strokeWidth={2}
+            strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#trendCyanGrad)"
           />

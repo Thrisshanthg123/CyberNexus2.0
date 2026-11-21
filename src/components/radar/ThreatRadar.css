@@ -1,0 +1,207 @@
+/* ============================================================================
+   CYBERNEXUS THREAT RADAR CSS
+   Location: src/components/radar/ThreatRadar.css
+   Strict Enterprise Calm Command Center Hero Visual
+   ============================================================================ */
+
+.threat-radar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.threat-radar-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background-color: #0B1220;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(11, 18, 32, 0.18), 0 0 0 1px rgba(11, 18, 32, 0.1);
+  padding: 12px;
+}
+
+.threat-radar-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Concentric rings & axes */
+.radar-ring {
+  fill: none;
+  stroke: rgba(130, 170, 255, 0.10);
+  stroke-width: 1;
+}
+
+.radar-ring-unscored {
+  stroke-dasharray: 4 4;
+  stroke: rgba(130, 170, 255, 0.15);
+}
+
+.radar-axis {
+  stroke: rgba(130, 170, 255, 0.10);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.radar-tick {
+  stroke: rgba(130, 170, 255, 0.20);
+  stroke-width: 1;
+}
+
+.radar-sector-label {
+  fill: #9AA9C2;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+.radar-ring-label {
+  fill: #7D8EA8;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  opacity: 0.8;
+}
+
+/* Pure CSS conic-gradient sweep */
+.radar-sweep {
+  transform-origin: center center;
+  animation: radar-sweep-spin 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes radar-sweep-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-sweep {
+    animation: none !important;
+    opacity: 0.15 !important;
+  }
+  .radar-blip-pulse-circle {
+    animation: none !important;
+  }
+}
+
+/* Marker blips */
+.radar-marker {
+  cursor: pointer;
+  transition: transform var(--motion-fast);
+}
+
+.radar-marker:hover,
+.radar-marker:focus-visible {
+  outline: none;
+}
+
+.radar-marker:focus-visible circle.radar-marker-dot {
+  stroke: var(--accent-cyan) !important;
+  stroke-width: 2.5px !important;
+}
+
+.radar-marker-dot {
+  transition: r var(--motion-fast), fill var(--motion-fast);
+}
+
+.radar-marker:hover .radar-marker-dot {
+  r: 8px;
+}
+
+/* Pulse animation for recent / critical blips */
+.radar-blip-pulse-circle {
+  animation: radar-blip-pulse 2.2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes radar-blip-pulse {
+  0% {
+    r: 4px;
+    opacity: 0.8;
+    stroke-width: 1.5px;
+  }
+  60% {
+    r: 16px;
+    opacity: 0;
+    stroke-width: 0.5px;
+  }
+  100% {
+    r: 4px;
+    opacity: 0;
+  }
+}
+
+/* Tooltip overlay */
+.radar-tooltip-box {
+  position: absolute;
+  pointer-events: none;
+  background-color: var(--bg-overlay);
+  border: 1px solid var(--border-strong-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: var(--text-12);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-overlay);
+  z-index: 100;
+  transform: translate(-50%, -120%);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* Radar Legend */
+.radar-legend {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.radar-legend-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--text-12);
+  color: var(--text-secondary);
+}
+
+.radar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.radar-legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.radar-abstract-disclaimer {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.4;
+  margin-top: 2px;
+}

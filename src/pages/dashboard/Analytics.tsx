@@ -46,10 +46,11 @@ export const AnalyticsPage: React.FC = () => {
   const topActors = useMemo(() => {
     const map = new Map<string, { actor: string; count: number; criticalCount: number }>();
     filteredThreats.forEach(t => {
-      const entry = map.get(t.actor) || { actor: t.actor, count: 0, criticalCount: 0 };
+      const actor = t.actor || 'Unknown Adversary';
+      const entry = map.get(actor) || { actor, count: 0, criticalCount: 0 };
       entry.count++;
       if (t.severity === 'critical') entry.criticalCount++;
-      map.set(t.actor, entry);
+      map.set(actor, entry);
     });
 
     const arr = Array.from(map.values());

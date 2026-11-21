@@ -8,9 +8,10 @@ import {
   Copy,
   Check,
   PlusCircle,
-  FileCheck2
+  FileCheck2,
+  ExternalLink
 } from 'lucide-react';
-import { Panel, Badge, Button, Tabs, ErrorState, Skeleton } from '../../components/ui';
+import { Panel, Badge, Button, Tabs, ErrorState, Skeleton, MockDataBadge } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 import { investigationStore } from '../../services/investigationStore';
@@ -33,7 +34,7 @@ export const ThreatDetailsPage: React.FC = () => {
     return (
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <Skeleton height={40} width={250} />
-        <Skeleton height={200} />
+        <Skeleton height={140} />
         <Skeleton height={300} />
       </div>
     );
@@ -76,19 +77,19 @@ export const ThreatDetailsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
       {/* Navigation header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
           <Button variant="outline" onClick={() => navigate(-1)} icon={<ArrowLeft size={14} />}>
             Back
           </Button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xl)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
+            <span style={{ fontSize: 'var(--text-xl)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--severity-high-text)' }}>
               {threat.id}
             </span>
             <Badge variant={threat.severity}>{threat.severity}</Badge>
-            <Badge variant="simulated">Simulated data</Badge>
+            {threat.isSimulated && <MockDataBadge />}
           </div>
         </div>
 
@@ -108,10 +109,9 @@ export const ThreatDetailsPage: React.FC = () => {
         <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
           {threat.title}
         </h1>
-        <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
-          <span>CVE: <strong style={{ color: 'var(--accent-cyan)' }}>{threat.cveId}</strong></span>
-          <span>Category: <strong>{threat.category}</strong></span>
-          <span>Adversary: <strong>{threat.actor}</strong></span>
+        <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          <span>CVE: <strong style={{ color: 'var(--accent-emerald-text)' }}>{threat.cveId}</strong></span>
+          <span>Category: <strong>{threat.category || 'Not provided by source'}</strong></span>
           <span>Source: <strong>{threat.source}</strong></span>
           <span>Ingested: <strong>{new Date(threat.timestamp).toLocaleString()}</strong></span>
         </div>
@@ -122,57 +122,106 @@ export const ThreatDetailsPage: React.FC = () => {
         activeId={activeTab}
         onChange={id => setActiveTab(id as 'summary' | 'iocs' | 'timeline' | 'evidence')}
         tabs={[
-          { id: 'summary', label: 'Summary & Mitigation', icon: <Shield size={16} /> },
+          { id: 'summary', label: 'Summary & References', icon: <Shield size={16} /> },
           { id: 'iocs', label: 'Linked Indicators (IOCs)', count: linkedIocs.length, icon: <Key size={16} /> },
-          { id: 'timeline', label: 'Attack Timeline', icon: <Clock size={16} /> },
+          { id: 'timeline', label: 'Telemetry Timeline', icon: <Clock size={16} /> },
           { id: 'evidence', label: 'Source Evidence & Telemetry', icon: <FileCheck2 size={16} /> }
         ]}
       />
 
-      {/* Tab 1: Summary */}
+      {/* Tab 1: Summary & References */}
       {activeTab === 'summary' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 'var(--space-5)' }}>
-          <Panel title="Threat Description & Vector">
-            <p style={{ fontSize: 'var(--text-sm)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }}>
-              {threat.description}
-            </p>
-            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
-              MITRE ATT&CK Classification
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-5)' }}>
+          <Panel title="Advisory Description & References">
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
+              Source Advisory Description
             </h4>
-            <div style={{ background: 'var(--color-raised)', padding: 'var(--space-3)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: 'var(--accent-cyan)' }}>
-              {threat.ttp}
+            <p style={{ fontSize: 'var(--text-sm)', lineHeight: 1.7, marginBottom: 'var(--space-4)', color: 'var(--text-primary)' }}>
+              {threat.description || 'Not provided by source'}
+            </p>
+
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
+              Official Vulnerability References
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+              <a
+                href={`https://nvd.nist.gov/vuln/detail/${threat.cveId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-xs)', color: 'var(--accent-blue)', textDecoration: 'none' }}
+              >
+                <ExternalLink size={13} />
+                <span>NVD Advisory Record ({threat.cveId})</span>
+              </a>
+              <a
+                href={`https://cve.org/CVERecord?id=${threat.cveId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-xs)', color: 'var(--accent-blue)', textDecoration: 'none' }}
+              >
+                <ExternalLink size={13} />
+                <span>CVE Program Record ({threat.cveId})</span>
+              </a>
             </div>
 
-            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', textTransform: 'uppercase', marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
-              Impacted Software & Perimeters
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
+              MITRE ATT&CK Classification
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-              {threat.affectedSystems.map(sys => (
-                <div key={sys} style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <span style={{ color: 'var(--severity-critical)' }}>▸</span> {sys}
-                </div>
-              ))}
+            <div style={{ background: 'var(--bg-raised)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: 'var(--accent-emerald-text)' }}>
+              {threat.ttp || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-ui)' }}>Not provided by source</span>}
             </div>
+
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+              Impacted Systems & Perimeters
+            </h4>
+            {threat.affectedSystems && threat.affectedSystems.length > 0 && threat.affectedSystems[0] !== 'Perimeter Systems' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                {threat.affectedSystems.map(sys => (
+                  <div key={sys} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <span style={{ color: 'var(--severity-critical)' }}>▸</span> {sys}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Not provided by source
+              </span>
+            )}
           </Panel>
 
           <Panel title="Actionable Remediation & Defense">
-            <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 'var(--space-4)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', marginBottom: 'var(--space-4)' }}>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)', lineHeight: 1.6 }}>
-                {threat.mitigation}
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
+              Remediation Guidance
+            </h4>
+            {threat.mitigation ? (
+              <div style={{ background: 'var(--accent-emerald-tint)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', marginBottom: 'var(--space-4)' }}>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                  {threat.mitigation}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ background: 'var(--bg-raised)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Not provided by source
+              </div>
+            )}
 
-            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-2)' }}>
               Correlation Confidence Rating
             </h4>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-              <div style={{ flex: 1, height: '8px', background: 'var(--color-raised)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${threat.confidence}%`, height: '100%', background: 'var(--accent-cyan)' }} />
+            {threat.confidence !== null && threat.confidence !== undefined ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div style={{ flex: 1, height: '8px', background: 'var(--bg-raised)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${threat.confidence}%`, height: '100%', background: 'var(--accent-emerald)' }} />
+                </div>
+                <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--accent-emerald-text)' }}>
+                  {threat.confidence}%
+                </span>
               </div>
-              <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                {threat.confidence}%
+            ) : (
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Not yet analysed
               </span>
-            </div>
+            )}
           </Panel>
         </div>
       )}
@@ -181,85 +230,83 @@ export const ThreatDetailsPage: React.FC = () => {
       {activeTab === 'iocs' && (
         <Panel title={`Correlated Indicators of Compromise (${linkedIocs.length})`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {linkedIocs.map(ioc => (
-              <div
-                key={ioc.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: 'var(--space-3)',
-                  background: 'var(--color-raised)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-chip)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <Badge variant={ioc.type === 'ip' ? 'high' : ioc.type === 'domain' ? 'medium' : 'default'}>
-                    {ioc.type.toUpperCase()}
-                  </Badge>
-                  <div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
-                      {ioc.defangedValue}
-                    </span>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
-                      ID: {ioc.id} • Reputation: <strong style={{ color: 'var(--severity-critical)' }}>{ioc.reputation}</strong>
+            {linkedIocs.length === 0 ? (
+              <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-4)', textAlign: 'center' }}>
+                Not provided by source
+              </div>
+            ) : (
+              linkedIocs.map(ioc => (
+                <div
+                  key={ioc.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 'var(--space-3)',
+                    background: 'var(--bg-raised)',
+                    border: '1px solid var(--border-subtle-color)',
+                    borderRadius: 'var(--radius-chip)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <Badge variant={ioc.type === 'ip' ? 'high' : ioc.type === 'domain' ? 'medium' : 'default'}>
+                      {ioc.type.toUpperCase()}
+                    </Badge>
+                    <div>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                        {ioc.defangedValue}
+                      </span>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        ID: {ioc.id} • Reputation: <strong style={{ color: 'var(--severity-critical-text)' }}>{ioc.reputation}</strong>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleCopy(ioc.defangedValue, ioc.id)}
-                    style={{ minHeight: '30px', fontSize: 'var(--text-xs)' }}
-                    icon={copiedIoc === ioc.id ? <Check size={12} /> : <Copy size={12} />}
-                  >
-                    {copiedIoc === ioc.id ? 'Copied' : 'Copy'}
-                  </Button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCopy(ioc.defangedValue, ioc.id)}
+                      style={{ minHeight: '30px', fontSize: 'var(--text-xs)' }}
+                      icon={copiedIoc === ioc.id ? <Check size={12} /> : <Copy size={12} />}
+                    >
+                      {copiedIoc === ioc.id ? 'Copied' : 'Copy'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Panel>
       )}
 
       {/* Tab 3: Timeline */}
       {activeTab === 'timeline' && (
-        <Panel title="Event Horizon & Cross-Feed Propagation Timeline">
+        <Panel
+          title="Telemetry Timeline"
+          action={<MockDataBadge>Simulated progression</MockDataBadge>}
+        >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', position: 'relative', paddingLeft: 'var(--space-4)' }}>
-            <div style={{ position: 'absolute', top: 0, bottom: 0, left: '6px', width: '2px', background: 'var(--color-border)' }} />
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: '6px', width: '2px', background: 'var(--border-subtle-color)' }} />
             
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '-14px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-cyan)' }} />
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ position: 'absolute', left: '-14px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-emerald)' }} />
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                 {new Date(threat.timestamp).toLocaleString()}
               </div>
-              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>Initial Cross-Platform Correlation Ingested</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)' }}>
-                Discovered on {threat.source} with automated confidence rating of {threat.confidence}%.
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Initial Advisory Ingested</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                Discovered via {threat.source} source index.
               </div>
             </div>
 
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '-14px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--severity-critical)' }} />
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                 {new Date(new Date(threat.timestamp).getTime() + 1800000).toLocaleString()}
               </div>
-              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>Weaponized PoC Script Detected</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)' }}>
-                Exploit code observed propagating on public repositories.
-              </div>
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '-14px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-green)' }} />
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
-                {new Date(new Date(threat.timestamp).getTime() + 3600000).toLocaleString()}
-              </div>
-              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>Defensive Advisory Generated</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)' }}>
-                Automated playbook generated firewall ingress rules and patch guidance.
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Automated Correlation Index Generated</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                Disclosed vulnerability cross-referenced with NVD and GitHub advisories.
               </div>
             </div>
           </div>
@@ -269,20 +316,17 @@ export const ThreatDetailsPage: React.FC = () => {
       {/* Tab 4: Source Evidence */}
       {activeTab === 'evidence' && (
         <Panel title="Raw Ingestion Telemetry & Evidence Packet">
-          <div style={{ background: 'var(--color-base)', padding: 'var(--space-4)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text)', overflowX: 'auto' }}>
+          <div style={{ background: 'var(--bg-app)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', overflowX: 'auto' }}>
             <pre style={{ margin: 0 }}>
 {`{
   "event_id": "${threat.id}",
   "cve_identifier": "${threat.cveId}",
   "ingestion_source": "${threat.source}",
   "ingested_at": "${threat.timestamp}",
-  "adversary": "${threat.actor}",
-  "mitre_technique": "${threat.ttp}",
-  "parser_confidence": ${threat.confidence / 100},
-  "raw_payload_indicators": [
-    ${linkedIocs.map(i => `"${i.defangedValue}"`).join(',\n    ')}
-  ],
-  "verification_checksum": "sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069"
+  "cvss_score": ${threat.cvssScore !== null ? threat.cvssScore : 'null'},
+  "adversary": ${threat.actor ? `"${threat.actor}"` : '"Not provided by source"'},
+  "mitre_technique": ${threat.ttp ? `"${threat.ttp}"` : '"Not provided by source"'},
+  "remediation": ${threat.mitigation ? `"${threat.mitigation}"` : '"Not provided by source"'}
 }`}
             </pre>
           </div>
@@ -307,22 +351,22 @@ export const ThreatDetailsPage: React.FC = () => {
                   }
                 }}
                 style={{
-                  background: 'var(--color-raised)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-chip)',
+                  background: 'var(--bg-raised)',
+                  border: '1px solid var(--border-subtle-color)',
+                  borderRadius: 'var(--radius-sm)',
                   padding: 'var(--space-3)',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-1)' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: 'var(--accent-cyan)' }}>{rel.id}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: 'var(--severity-high-text)' }}>{rel.id}</span>
                   <Badge variant={rel.severity}>{rel.severity}</Badge>
                 </div>
-                <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {rel.title}
                 </div>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-small)', marginTop: '4px' }}>
-                  {rel.actor} • {rel.cveId}
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  {rel.cveId} • Source: {rel.source}
                 </div>
               </div>
             ))}

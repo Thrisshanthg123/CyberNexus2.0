@@ -1,30 +1,188 @@
-import React, { useState, useEffect, ReactNode } from 'react';
-import { AlertCircle, AlertTriangle, CheckCircle2, Info, X, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, ReactNode, useRef } from 'react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  X,
+  RefreshCw,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Check
+} from 'lucide-react';
+import { Severity } from '../../types';
 import './primitives.css';
 
-// 1. Panel
-export interface PanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  title?: ReactNode;
+// ============================================================================
+// 1. Panel & PanelHeader
+// ============================================================================
+export interface PanelHeaderProps {
+  title: ReactNode;
+  description?: ReactNode;
   action?: ReactNode;
-  children: ReactNode;
   className?: string;
 }
 
-export const Panel: React.FC<PanelProps> = ({ title, action, children, className = '', ...props }) => {
+export const PanelHeader: React.FC<PanelHeaderProps> = ({
+  title,
+  description,
+  action,
+  className = ''
+}) => (
+  <header className={`ui-panel-header ${className}`}>
+    <div className="ui-panel-title-group">
+      <h3 className="ui-panel-title">{title}</h3>
+      {description && <p className="ui-panel-description">{description}</p>}
+    </div>
+    {action && <div className="ui-panel-action">{action}</div>}
+  </header>
+);
+
+export interface PanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+  title?: ReactNode;
+  description?: ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
+  raised?: boolean;
+  className?: string;
+}
+
+export const Panel: React.FC<PanelProps> = ({
+  title,
+  description,
+  action,
+  children,
+  raised = false,
+  className = '',
+  ...props
+}) => {
   return (
-    <section className={`ui-panel ${className}`} {...props}>
-      {(title || action) && (
-        <header className="ui-panel-header">
-          {title && <h3 className="ui-panel-title">{title}</h3>}
-          {action && <div className="ui-panel-action">{action}</div>}
-        </header>
+    <section className={`ui-panel ${raised ? 'ui-panel-raised' : ''} ${className}`} {...props}>
+      {(title || action || description) && (
+        <PanelHeader title={title} description={description} action={action} />
       )}
       {children}
     </section>
   );
 };
 
-// 2. Badge
+// ============================================================================
+// 2. KpiCard (value, delta, sparkline)
+// ============================================================================
+export interface KpiCardProps {
+  label: string;
+  value: string | number;
+  delta?: string;
+  deltaType?: 'critical' | 'good' | 'neutral';
+  subtext?: ReactNode;
+  icon?: ReactNode;
+  iconVariant?: 'blue' | 'emerald' | 'amber' | 'purple' | 'red';
+  sparklineData?: number[];
+  badge?: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}
+
+export const KpiCard: React.FC<KpiCardProps> = ({
+  label,
+  value,
+  delta,
+  deltaType = 'neutral',
+  subtext,
+  icon,
+  iconVariant = 'blue',
+  sparklineData,
+  badge,
+  className = '',
+  onClick
+}) => {
+  return (
+    <div
+      className={`ui-kpi-card ui-kpi-card-${iconVariant} ${className}`}
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
+      <div className="ui-kpi-header">
+        <span className="ui-kpi-label">{label}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {badge}
+          {icon && (
+            <div className={`ui-kpi-icon-chip ui-kpi-icon-${iconVariant}`} aria-hidden="true">
+              {icon}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="ui-kpi-value-row">
+        <span className="ui-kpi-value tabular-nums">{value}</span>
+        {delta && (
+          <span className={`ui-kpi-delta ui-kpi-delta-${deltaType}`}>
+            {delta}
+          </span>
+        )}
+      </div>
+      {subtext && <div className="ui-kpi-subtext">{subtext}</div>}
+      {sparklineData && sparklineData.length > 1 && (
+        <svg className="ui-kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+          {(() => {
+            const min = Math.min(...sparklineData);
+            const max = Math.max(...sparklineData) || 1;
+            const points = sparklineData.map((d, i) => {
+              const x = (i / (sparklineData.length - 1)) * 100;
+              const y = 22 - ((d - min) / (max - min || 1)) * 18;
+              return `${x},${y}`;
+            }).join(' ');
+            return (
+              <polyline
+                className="ui-kpi-sparkline-line"
+                fill="none"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={points}
+              />
+            );
+          })()}
+        </svg>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// 3. SeverityBadge (strictly paired with indicator dot & label)
+// ============================================================================
+export interface SeverityBadgeProps {
+  severity: Severity | string;
+  className?: string;
+  showDot?: boolean;
+}
+
+export const SeverityBadge: React.FC<SeverityBadgeProps> = ({
+  severity,
+  className = '',
+  showDot = true
+}) => {
+  const normalized = (severity || 'low').toLowerCase() as Severity;
+  const validSeverity = ['critical', 'high', 'medium', 'low'].includes(normalized)
+    ? normalized
+    : 'low';
+
+  return (
+    <span className={`ui-severity-badge ui-severity-badge-${validSeverity} ${className}`}>
+      {showDot && <span className="ui-severity-dot" aria-hidden="true" />}
+      <span>{severity}</span>
+    </span>
+  );
+};
+
+// Generic Badge
 export interface BadgeProps {
   variant?: 'critical' | 'high' | 'medium' | 'low' | 'simulated' | 'planned' | 'active' | 'default';
   children: ReactNode;
@@ -33,37 +191,103 @@ export interface BadgeProps {
   style?: React.CSSProperties;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ variant = 'default', children, className = '', title, style }) => {
+export const Badge: React.FC<BadgeProps> = ({
+  variant = 'default',
+  children,
+  className = '',
+  title,
+  style
+}) => {
+  if (variant === 'simulated') {
+    return <MockDataBadge title={title} className={className} style={style}>{children}</MockDataBadge>;
+  }
+
   return (
     <span className={`ui-badge ui-badge-${variant} ${className}`} title={title} style={style}>
-      {variant === 'simulated' && <span aria-hidden="true" style={{ fontSize: '10px' }}>⚡</span>}
       {children}
     </span>
   );
 };
 
-// 3. Button & IconButton
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  icon?: ReactNode;
+// ============================================================================
+// MockDataBadge (Condition 2: Never present mock metrics as real)
+// ============================================================================
+export interface MockDataBadgeProps {
   children?: ReactNode;
+  title?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const MockDataBadge: React.FC<MockDataBadgeProps> = ({
+  children = 'Simulated data',
+  title = 'Simulated data generated client-side; not real backend telemetry',
+  className = '',
+  style
+}) => {
+  return (
+    <span
+      className={`ui-mock-badge ${className}`}
+      title={title}
+      style={style}
+      aria-label="Simulated data indicator"
+    >
+      <span aria-hidden="true" style={{ fontSize: '9px' }}>⚡</span>
+      {children}
+    </span>
+  );
+};
+
+// ============================================================================
+// 4. StatusDot
+// ============================================================================
+export interface StatusDotProps {
+  status: 'online' | 'offline' | 'warning' | 'planned';
+  title?: string;
+  className?: string;
+}
+
+export const StatusDot: React.FC<StatusDotProps> = ({ status, title, className = '' }) => (
+  <span
+    className={`ui-status-dot ui-status-dot-${status} ${className}`}
+    title={title || `Status: ${status}`}
+    aria-label={`Status: ${status}`}
+  />
+);
+
+// ============================================================================
+// 5. Buttons & IconButtons
+// ============================================================================
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+  size?: 'sm' | 'md';
+  loading?: boolean;
+  icon?: ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   variant = 'secondary',
+  size = 'md',
+  loading = false,
   icon,
   children,
   className = '',
   disabled,
   ...props
 }) => {
+  const resolvedVariant = variant === 'outline' ? 'secondary' : variant;
   return (
     <button
-      className={`ui-btn ui-btn-${variant} ${className}`}
-      disabled={disabled}
+      className={`ui-btn ui-btn-${resolvedVariant} ${size === 'sm' ? 'ui-btn-sm' : ''} ${className}`}
+      disabled={disabled || loading}
+      aria-busy={loading}
       {...props}
     >
-      {icon}
+      {loading ? (
+        <RefreshCw size={14} className="spin" aria-hidden="true" />
+      ) : (
+        icon && <span aria-hidden="true">{icon}</span>
+      )}
       {children}
     </button>
   );
@@ -71,32 +295,364 @@ export const Button: React.FC<ButtonProps> = ({
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
-  'aria-label': string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
+  ariaLabel: string;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
   icon,
-  variant = 'secondary',
+  ariaLabel,
   className = '',
   ...props
-}) => {
+}) => (
+  <button
+    type="button"
+    className={`ui-btn ui-btn-ghost ui-btn-icon ${className}`}
+    aria-label={ariaLabel}
+    title={ariaLabel}
+    {...props}
+  >
+    {icon}
+  </button>
+);
+
+// ============================================================================
+// 6. DataTable (sticky header, sortable, selectable rows, pagination)
+// ============================================================================
+export interface Column<T> {
+  header: string;
+  key: string;
+  render?: (item: T) => ReactNode;
+  sortable?: boolean;
+  width?: string;
+  align?: 'left' | 'center' | 'right';
+}
+
+export interface DataTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  keyExtractor: (item: T) => string;
+  sortKey?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (key: string) => void;
+  selectable?: boolean;
+  selectedKeys?: Set<string>;
+  onSelectKey?: (key: string) => void;
+  onSelectAll?: () => void;
+  pageSize?: number;
+  loading?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  className?: string;
+}
+
+export function DataTable<T>({
+  columns,
+  data,
+  keyExtractor,
+  sortKey,
+  sortOrder = 'asc',
+  onSort,
+  selectable,
+  selectedKeys,
+  onSelectKey,
+  onSelectAll,
+  pageSize = 10,
+  loading,
+  emptyTitle = 'No records found',
+  emptyDescription = 'Try adjusting your filters or search terms.',
+  className = ''
+}: DataTableProps<T>) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(data.length / pageSize) || 1;
+
+  const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length, pageSize]);
+
+  if (loading) {
+    return (
+      <div className="ui-table-container">
+        <Skeleton height={240} width="100%" />
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="ui-table-container">
+        <EmptyState title={emptyTitle} description={emptyDescription} />
+      </div>
+    );
+  }
+
   return (
-    <button
-      className={`ui-btn ui-btn-icon ui-btn-${variant} ${className}`}
+    <div className={`ui-table-container ${className}`}>
+      <table className="ui-table">
+        <thead>
+          <tr>
+            {selectable && (
+              <th style={{ width: '40px', textAlign: 'center' }}>
+                <input
+                  type="checkbox"
+                  aria-label="Select all rows"
+                  checked={data.length > 0 && selectedKeys?.size === data.length}
+                  onChange={onSelectAll}
+                />
+              </th>
+            )}
+            {columns.map(col => (
+              <th
+                key={col.key}
+                style={{ width: col.width, textAlign: col.align || 'left' }}
+                className={col.sortable ? 'sortable' : ''}
+                onClick={() => col.sortable && onSort?.(col.key)}
+              >
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span>{col.header}</span>
+                  {col.sortable && sortKey === col.key && (
+                    sortOrder === 'asc' ? <ChevronUp size={13} /> : <ChevronDown size={13} />
+                  )}
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData.map(item => {
+            const key = keyExtractor(item);
+            const isSelected = selectedKeys?.has(key);
+            return (
+              <tr key={key} className={isSelected ? 'selected' : ''}>
+                {selectable && (
+                  <td style={{ textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      aria-label={`Select row ${key}`}
+                      checked={isSelected || false}
+                      onChange={() => onSelectKey?.(key)}
+                    />
+                  </td>
+                )}
+                {columns.map(col => (
+                  <td key={col.key} style={{ textAlign: col.align || 'left' }}>
+                    {col.render ? col.render(item) : (item as Record<string, unknown>)[col.key] as ReactNode}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {totalPages > 1 && (
+        <div className="ui-table-pagination">
+          <span>
+            Page {currentPage} of {totalPages} ({data.length} total)
+          </span>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={14} />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              aria-label="Next page"
+            >
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// 7. FilterChips
+// ============================================================================
+export interface FilterOption {
+  label: string;
+  value: string;
+  count?: number;
+}
+
+export interface FilterChipsProps {
+  options: FilterOption[];
+  selectedValue: string;
+  onChange: (value: string) => void;
+  className?: string;
+}
+
+export const FilterChips: React.FC<FilterChipsProps> = ({
+  options,
+  selectedValue,
+  onChange,
+  className = ''
+}) => (
+  <div className={`ui-filter-chips ${className}`} role="tablist">
+    {options.map(opt => (
+      <button
+        key={opt.value}
+        type="button"
+        role="tab"
+        aria-selected={selectedValue === opt.value}
+        className={`ui-filter-chip ${selectedValue === opt.value ? 'active' : ''}`}
+        onClick={() => onChange(opt.value)}
+      >
+        <span>{opt.label}</span>
+        {opt.count !== undefined && (
+          <span style={{ opacity: 0.7, marginLeft: '4px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+            ({opt.count})
+          </span>
+        )}
+      </button>
+    ))}
+  </div>
+);
+
+// ============================================================================
+// 8. SearchInput
+// ============================================================================
+export interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  value: string;
+  onChangeValue: (value: string) => void;
+  onClear?: () => void;
+  width?: string;
+}
+
+export const SearchInput: React.FC<SearchInputProps> = ({
+  value,
+  onChangeValue,
+  onClear,
+  width = '240px',
+  placeholder = 'Search...',
+  className = '',
+  ...props
+}) => (
+  <div className={`ui-search-box ${className}`} style={{ width }}>
+    <Search size={14} className="ui-search-icon" aria-hidden="true" />
+    <input
+      type="text"
+      className="ui-search-input"
+      value={value}
+      onChange={e => onChangeValue(e.target.value)}
+      placeholder={placeholder}
       {...props}
-    >
-      {icon}
-    </button>
+    />
+    {value && (
+      <button
+        type="button"
+        className="ui-search-clear"
+        onClick={() => {
+          onChangeValue('');
+          onClear?.();
+        }}
+        aria-label="Clear search"
+      >
+        <X size={13} />
+      </button>
+    )}
+  </div>
+);
+
+// ============================================================================
+// 9. Drawer (slide-over panel)
+// ============================================================================
+export interface DrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  subtitle?: ReactNode;
+  children: ReactNode;
+}
+
+export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtitle, children }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="ui-drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="ui-drawer-content" onClick={e => e.stopPropagation()}>
+        <header className="ui-drawer-header">
+          <div>
+            <h3 style={{ margin: 0, fontSize: 'var(--text-16)', color: 'var(--text-primary)', fontWeight: 600 }}>
+              {title}
+            </h3>
+            {subtitle && (
+              <p style={{ margin: 0, fontSize: 'var(--text-12)', color: 'var(--text-muted)' }}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+          <IconButton icon={<X size={16} />} ariaLabel="Close drawer" onClick={onClose} />
+        </header>
+        <div className="ui-drawer-body">{children}</div>
+      </div>
+    </div>
   );
 };
 
-// 4. Tabs
+// ============================================================================
+// 10. Modal
+// ============================================================================
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  footer?: ReactNode;
+}
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="ui-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="ui-modal-content" onClick={e => e.stopPropagation()}>
+        <header className="ui-modal-header">
+          <h3 style={{ margin: 0, fontSize: 'var(--text-16)', color: 'var(--text-primary)' }}>{title}</h3>
+          <IconButton icon={<X size={16} />} ariaLabel="Close dialog" onClick={onClose} />
+        </header>
+        <div className="ui-modal-body">{children}</div>
+        {footer && <footer className="ui-modal-footer">{footer}</footer>}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// 11. Tabs
+// ============================================================================
 export interface TabItem {
   id: string;
   label: string;
-  icon?: ReactNode;
   count?: number;
+  icon?: ReactNode;
 }
 
 export interface TabsProps {
@@ -106,123 +662,31 @@ export interface TabsProps {
   className?: string;
 }
 
-export const Tabs: React.FC<TabsProps> = ({ tabs, activeId, onChange, className = '' }) => {
-  return (
-    <div className={`ui-tabs-container ${className}`} role="tablist">
-      {tabs.map(tab => {
-        const isActive = tab.id === activeId;
-        return (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={isActive}
-            tabIndex={isActive ? 0 : -1}
-            onClick={() => onChange(tab.id)}
-            style={{
-              background: isActive ? 'var(--color-raised)' : 'transparent',
-              color: isActive ? 'var(--color-text)' : 'var(--color-text-small)',
-              border: 'none',
-              borderBottom: isActive ? '2px solid var(--accent-cyan)' : '2px solid transparent',
-              padding: 'var(--space-2) var(--space-4)',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 'var(--text-sm)',
-              fontWeight: isActive ? 600 : 500,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-            {typeof tab.count === 'number' && (
-              <span className="ui-badge ui-badge-default tabular-nums">{tab.count}</span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
-};
+export const Tabs: React.FC<TabsProps> = ({ tabs, activeId, onChange, className = '' }) => (
+  <nav className={`ui-tabs ${className}`} role="tablist">
+    {tabs.map(tab => (
+      <button
+        key={tab.id}
+        type="button"
+        role="tab"
+        aria-selected={activeId === tab.id}
+        className={`ui-tab-btn ${activeId === tab.id ? 'active' : ''}`}
+        onClick={() => onChange(tab.id)}
+      >
+        <span>{tab.label}</span>
+        {tab.count !== undefined && (
+          <span style={{ marginLeft: '4px', fontSize: '11px', opacity: 0.7, fontFamily: 'var(--font-mono)' }}>
+            ({tab.count})
+          </span>
+        )}
+      </button>
+    ))}
+  </nav>
+);
 
-// 5. Modal
-export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode;
-}
-
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="ui-overlay-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="ui-modal" onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
-          <h2 id="modal-title" style={{ fontSize: 'var(--text-lg)', fontWeight: 600 }}>{title}</h2>
-          <IconButton icon={<X size={18} />} aria-label="Close modal" variant="outline" onClick={onClose} />
-        </div>
-        <div>{children}</div>
-      </div>
-    </div>
-  );
-};
-
-// 6. Drawer
-export interface DrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: ReactNode;
-  children: ReactNode;
-}
-
-export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children }) => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="ui-overlay-backdrop" onClick={onClose} role="dialog" aria-modal="true">
-      <aside className="ui-drawer" onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
-          <div style={{ fontSize: 'var(--text-lg)', fontWeight: 600 }}>{title}</div>
-          <IconButton icon={<X size={18} />} aria-label="Close drawer" variant="outline" onClick={onClose} />
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>{children}</div>
-      </aside>
-    </div>
-  );
-};
-
-// 7. Tooltip
+// ============================================================================
+// 12. Tooltip
+// ============================================================================
 export interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
@@ -240,155 +704,48 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
       onBlur={() => setVisible(false)}
     >
       {children}
-      {visible && <div className="ui-tooltip-content" role="tooltip">{content}</div>}
+      {visible && content && (
+        <div className="ui-tooltip" role="tooltip">
+          {content}
+        </div>
+      )}
     </div>
   );
 };
 
-// 8. DataTable
-export interface Column<T> {
-  header: string;
-  key: string;
-  render?: (item: T) => ReactNode;
-  sortable?: boolean;
-  width?: string;
-}
-
-export interface DataTableProps<T> {
-  columns: Column<T>[];
-  data: T[];
-  keyField: keyof T;
-  onRowClick?: (item: T) => void;
-  className?: string;
-  emptyMessage?: string;
-}
-
-export function DataTable<T>({
-  columns,
-  data,
-  keyField,
-  onRowClick,
-  className = '',
-  emptyMessage = 'No records found'
-}: DataTableProps<T>) {
-  const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  const handleSort = (key: string, sortable?: boolean) => {
-    if (!sortable) return;
-    if (sortKey === key) {
-      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortKey(key);
-      setSortOrder('asc');
-    }
-  };
-
-  const sortedData = React.useMemo(() => {
-    if (!sortKey) return data;
-    return [...data].sort((a, b) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const valA = (a as any)[sortKey];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const valB = (b as any)[sortKey];
-      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [data, sortKey, sortOrder]);
-
-  return (
-    <div className={`ui-table-container ${className}`}>
-      <table className="ui-table">
-        <thead>
-          <tr>
-            {columns.map(col => (
-              <th
-                key={col.key}
-                style={{ width: col.width, cursor: col.sortable ? 'pointer' : 'default' }}
-                onClick={() => handleSort(col.key, col.sortable)}
-                role={col.sortable ? 'button' : undefined}
-                tabIndex={col.sortable ? 0 : undefined}
-                onKeyDown={e => {
-                  if (col.sortable && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    handleSort(col.key, true);
-                  }
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                  <span>{col.header}</span>
-                  {col.sortable && sortKey === col.key && (
-                    <span style={{ fontSize: '10px' }}>{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sortedData.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-small)' }}>
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            sortedData.map(item => (
-              <tr
-                key={String(item[keyField])}
-                onClick={() => onRowClick && onRowClick(item)}
-                style={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                tabIndex={onRowClick ? 0 : undefined}
-                onKeyDown={e => {
-                  if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    onRowClick(item);
-                  }
-                }}
-              >
-                {columns.map(col => (
-                  <td key={col.key}>
-                    {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key] ?? '')}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// 9. Skeleton
+// ============================================================================
+// 13. Skeleton
+// ============================================================================
 export interface SkeletonProps {
-  width?: string | number;
-  height?: string | number;
-  borderRadius?: string | number;
+  height?: number | string;
+  width?: number | string;
+  borderRadius?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
+  height = '16px',
   width = '100%',
-  height = '20px',
-  borderRadius = 'var(--radius-chip)',
-  className = ''
-}) => {
-  return (
-    <div
-      className={`ui-skeleton ${className}`}
-      style={{
-        width: typeof width === 'number' ? `${width}px` : width,
-        height: typeof height === 'number' ? `${height}px` : height,
-        borderRadius
-      }}
-      aria-hidden="true"
-    />
-  );
-};
+  borderRadius,
+  className = '',
+  style
+}) => (
+  <div
+    className={`ui-skeleton ${className}`}
+    style={{
+      height,
+      width,
+      borderRadius: borderRadius || 'var(--radius-sm)',
+      ...style
+    }}
+    aria-hidden="true"
+  />
+);
 
-// 10. EmptyState
+// ============================================================================
+// 14. EmptyState
+// ============================================================================
 export interface EmptyStateProps {
   title?: string;
   description?: string;
@@ -397,55 +754,91 @@ export interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = 'No Data Available',
-  description = 'There are no active records matching this criterion.',
-  icon = <Info size={36} color="var(--color-text-muted)" />,
+  title = 'No data available',
+  description = 'No records match the selected filter criteria.',
+  icon,
   action
-}) => {
-  return (
-    <div className="ui-empty-state">
-      {icon}
-      <h4 style={{ fontWeight: 600, color: 'var(--color-text)' }}>{title}</h4>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-small)', maxWidth: '320px' }}>
-        {description}
-      </p>
-      {action && <div style={{ marginTop: 'var(--space-2)' }}>{action}</div>}
-    </div>
-  );
-};
+}) => (
+  <div className="ui-empty-state">
+    <div className="ui-empty-icon">{icon || <AlertCircle size={32} />}</div>
+    <h4 className="ui-empty-title">{title}</h4>
+    <p className="ui-empty-desc">{description}</p>
+    {action && <div style={{ marginTop: 'var(--space-2)' }}>{action}</div>}
+  </div>
+);
 
-// 11. ErrorState
+// ============================================================================
+// 15. ErrorState (with retry)
+// ============================================================================
 export interface ErrorStateProps {
+  title?: string;
   message?: string;
   onRetry?: () => void;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  message = 'Failed to load threat data.',
+  title = 'Telemetry Ingestion Error',
+  message = 'Failed to load telemetry data from endpoint.',
   onRetry
-}) => {
+}) => (
+  <div className="ui-error-state" role="alert">
+    <div className="ui-error-icon"><AlertTriangle size={24} /></div>
+    <h4 className="ui-error-title">{title}</h4>
+    <p className="ui-error-desc">{message}</p>
+    {onRetry && (
+      <Button
+        size="sm"
+        variant="secondary"
+        icon={<RefreshCw size={13} />}
+        onClick={onRetry}
+        style={{ marginTop: 'var(--space-2)' }}
+      >
+        Retry Operation
+      </Button>
+    )}
+  </div>
+);
+
+// ============================================================================
+// 16. CodeText (mono for CVE IDs, IPs, hashes, timestamps)
+// ============================================================================
+export interface CodeTextProps {
+  text: string;
+  allowCopy?: boolean;
+  className?: string;
+}
+
+export const CodeText: React.FC<CodeTextProps> = ({ text, allowCopy = true, className = '' }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <div className="ui-error-state" role="alert">
-      <AlertTriangle size={36} color="var(--severity-critical)" />
-      <h4 style={{ fontWeight: 600, color: 'var(--severity-critical)' }}>Data Fetch Error</h4>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-small)', maxWidth: '360px' }}>
-        {message}
-      </p>
-      {onRetry && (
-        <Button
-          variant="outline"
-          onClick={onRetry}
-          icon={<RefreshCw size={14} />}
-          style={{ borderColor: 'var(--severity-critical)', color: 'var(--severity-critical)' }}
+    <span className={`ui-code-text ${className}`}>
+      <span>{text}</span>
+      {allowCopy && (
+        <button
+          type="button"
+          className="ui-code-copy-btn"
+          onClick={handleCopy}
+          title={copied ? 'Copied' : `Copy ${text}`}
+          aria-label={copied ? 'Copied' : `Copy ${text}`}
         >
-          Retry Connection
-        </Button>
+          {copied ? <Check size={11} color="var(--status-success)" /> : <Copy size={11} />}
+        </button>
       )}
-    </div>
+    </span>
   );
 };
 
-// 12. Toast
+// ============================================================================
+// 17. Toast
+// ============================================================================
 export interface ToastProps {
   message: string;
   type?: 'info' | 'success' | 'warning' | 'error';
@@ -453,34 +846,146 @@ export interface ToastProps {
 }
 
 export const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose }) => {
-  const iconMap = {
-    info: <Info size={16} color="var(--accent-cyan)" />,
-    success: <CheckCircle2 size={16} color="var(--accent-green)" />,
-    warning: <AlertTriangle size={16} color="var(--severity-high)" />,
-    error: <AlertCircle size={16} color="var(--severity-critical)" />
-  };
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: 'var(--space-4)',
-        right: 'var(--space-4)',
-        background: 'var(--color-panel)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-panel)',
-        padding: 'var(--space-3) var(--space-4)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-3)',
-        boxShadow: 'var(--shadow-overlay)',
-        zIndex: 9999
-      }}
-      role="status"
-    >
-      {iconMap[type]}
-      <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>{message}</span>
-      <IconButton icon={<X size={14} />} aria-label="Close notification" variant="outline" onClick={onClose} />
+    <div className="ui-toast" role="status">
+      {type === 'success' && <CheckCircle2 size={16} color="var(--status-success)" />}
+      {type === 'error' && <AlertCircle size={16} color="var(--severity-critical)" />}
+      {type === 'warning' && <AlertTriangle size={16} color="var(--status-warning)" />}
+      {type === 'info' && <Info size={16} color="var(--accent-cyan)" />}
+      <span>{message}</span>
+      <IconButton icon={<X size={14} />} ariaLabel="Close notification" onClick={onClose} />
+    </div>
+  );
+};
+
+// ============================================================================
+// 18. CommandPalette (Ctrl+K)
+// ============================================================================
+export interface CommandItem {
+  id: string;
+  title: string;
+  category: 'Navigation' | 'Threat' | 'Action';
+  shortcut?: string;
+  onSelect: () => void;
+}
+
+export interface CommandPaletteProps {
+  isOpen: boolean;
+  onClose: () => void;
+  commands: CommandItem[];
+}
+
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, commands }) => {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      setQuery('');
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (isOpen) onClose();
+      }
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const filtered = commands.filter(c =>
+    c.title.toLowerCase().includes(query.toLowerCase()) ||
+    c.category.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div className="ui-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div
+        className="ui-modal-content"
+        style={{ maxWidth: '580px', marginTop: '-10vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: 'var(--border-subtle)', gap: '10px' }}>
+          <Search size={16} color="var(--text-muted)" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Type a command, CVE, IOC hash, or module..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: 'var(--text-primary)',
+              fontSize: 'var(--text-14)',
+              fontFamily: 'var(--font-ui)'
+            }}
+          />
+          <kbd style={{ fontSize: '11px', background: 'var(--bg-raised)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-subtle-color)', color: 'var(--text-muted)' }}>
+            ESC
+          </kbd>
+        </div>
+
+        <div style={{ maxHeight: '340px', overflowY: 'auto', padding: '8px' }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--text-13)' }}>
+              No commands or entities match &ldquo;{query}&rdquo;
+            </div>
+          ) : (
+            filtered.map(cmd => (
+              <div
+                key={cmd.id}
+                onClick={() => {
+                  cmd.onSelect();
+                  onClose();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-13)',
+                  color: 'var(--text-primary)',
+                  transition: 'background var(--motion-fast)'
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-raised)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                    {cmd.category}
+                  </span>
+                  <span>{cmd.title}</span>
+                </div>
+                {cmd.shortcut && (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    {cmd.shortcut}
+                  </span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 };
