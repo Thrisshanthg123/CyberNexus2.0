@@ -3,4 +3,7 @@
 *.db-wal
 __pycache__/
 *.pyc
-.env
+.envnode_modules/
+dist/
+venv/
+.venv/
