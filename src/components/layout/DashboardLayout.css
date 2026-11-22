@@ -1,7 +1,7 @@
 /* ============================================================================
-   CYBERNEXUS DASHBOARD LAYOUT CSS - LIGHT ENTERPRISE THEME
+   CYBERNEXUS DASHBOARD LAYOUT CSS - UNIFIED LIGHT THEME
    Location: src/components/layout/DashboardLayout.css
-   Modelled on Modern Enterprise SaaS (Emerald Accent, Soft White & Gray Surfaces)
+   Lighter grey canvas, soft white surfaces, green accent
    ============================================================================ */
 
 .dashboard-root {
@@ -32,6 +32,27 @@
   box-sizing: border-box;
 }
 
+/* Calm Amber style for records older than 30 days */
+.emergency-alert-banner.calm {
+  background-color: var(--alert-calm-bg);
+  color: var(--alert-calm-text);
+  border-bottom: 1px solid var(--alert-calm-border);
+}
+
+.emergency-alert-banner.calm .emergency-alert-btn {
+  background-color: var(--bg-surface);
+  color: var(--alert-calm-text);
+  border: 1px solid var(--alert-calm-border);
+}
+
+.emergency-alert-banner.calm .emergency-alert-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.emergency-alert-banner.calm .emergency-alert-close-btn {
+  color: var(--alert-calm-text);
+}
+
 .emergency-alert-content {
   display: flex;
   align-items: center;
@@ -46,10 +67,10 @@
 }
 
 .emergency-alert-btn {
-  background-color: #FFFFFF;
+  background-color: var(--bg-surface);
   color: var(--alert-banner-bg);
-  border: none;
-  border-radius: 6px;
+  border: 1px solid var(--border-strong-color);
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
   font-size: var(--text-12);
   font-weight: 600;
@@ -130,20 +151,20 @@
   letter-spacing: -0.02em;
 }
 
-/* Emerald rounded square logo mark */
+/* Cyan rounded square logo mark */
 .sidebar-brand-icon {
   width: 32px;
   height: 32px;
-  background-color: var(--accent-emerald);
-  border-radius: 10px;
+  background-color: var(--accent-blue);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FFFFFF;
+  color: var(--text-inverse);
   font-weight: 800;
   font-size: 14px;
   font-family: var(--font-mono);
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  box-shadow: var(--shadow-subtle);
 }
 
 .sidebar-nav {
@@ -171,14 +192,14 @@
   padding: var(--space-1) var(--space-3);
 }
 
-/* Sidebar items: 44px tall with 20px icons, 12px radius */
+/* Sidebar items: 44px tall with 20px icons, 8px radius */
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   height: 44px;
   padding: 0 var(--space-3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   text-decoration: none;
   font-size: var(--text-14);
@@ -188,35 +209,35 @@
 }
 
 .sidebar-link:hover {
-  background-color: rgba(227, 232, 238, 0.6);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
-/* Active item: Solid emerald background with white text and 12px radius */
+/* Active item: Green accent background with white text */
 .sidebar-link.active {
   background-color: var(--accent-emerald);
-  color: #FFFFFF;
+  color: var(--text-inverse);
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+  box-shadow: var(--shadow-subtle);
 }
 
 .sidebar-link.active svg {
-  color: #FFFFFF;
+  color: var(--text-inverse);
 }
 
 .sidebar-link-badge {
   margin-left: auto;
   font-size: 11px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   background-color: var(--bg-surface);
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
 
 .sidebar-link.active .sidebar-link-badge {
-  background-color: rgba(255, 255, 255, 0.25);
-  color: #FFFFFF;
+  background-color: var(--hero-badge-bg);
+  color: var(--text-inverse);
 }
 
 .sidebar-footer {
@@ -230,7 +251,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: 8px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle-color);
   cursor: pointer;
@@ -245,9 +266,9 @@
 .sidebar-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background-color: var(--accent-emerald-tint);
-  color: var(--accent-emerald);
+  border-radius: var(--radius-md);
+  background-color: var(--accent-cyan-tint);
+  color: var(--accent-cyan);
   font-size: 12px;
   font-weight: 700;
   display: flex;
@@ -291,7 +312,7 @@
   background-color: var(--bg-app);
 }
 
-/* Top Bar: White, 64px tall, 1px bottom border #E3E8EE */
+/* Top Bar: Dark Navy Surface, 64px tall, 1px bottom border */
 .dashboard-topbar {
   height: 64px;
   background-color: var(--bg-surface);
@@ -303,7 +324,7 @@
   gap: var(--space-4);
   flex-shrink: 0;
   z-index: 50;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+  box-shadow: var(--shadow-subtle);
 }
 
 .topbar-left {
@@ -314,13 +335,13 @@
 }
 
 .topbar-product-badge {
-  background-color: var(--accent-emerald-tint);
-  color: var(--accent-emerald);
+  background-color: var(--accent-cyan-tint);
+  color: var(--accent-cyan);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-chip);
   text-transform: uppercase;
 }
 
@@ -338,7 +359,7 @@
 }
 
 .topbar-breadcrumbs a:hover {
-  color: var(--accent-emerald);
+  color: var(--accent-cyan);
 }
 
 .topbar-breadcrumbs .current {
@@ -360,13 +381,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--accent-emerald-tint);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background-color: var(--accent-blue-tint);
+  border: 1px solid var(--accent-blue-border);
   border-radius: var(--radius-chip);
   padding: 5px 12px;
   font-size: var(--text-12);
   font-weight: 600;
-  color: var(--accent-emerald);
+  color: var(--accent-blue-text);
 }
 
 .topbar-search-trigger {
@@ -376,7 +397,7 @@
   justify-content: space-between;
   background-color: var(--bg-raised);
   border: 1px solid var(--border-subtle-color);
-  border-radius: 10px;
+  border-radius: var(--radius-input);
   padding: 6px 12px;
   color: var(--text-muted);
   font-size: var(--text-13);
@@ -386,7 +407,7 @@
 
 .topbar-search-trigger:hover {
   border-color: var(--border-strong-color);
-  background-color: #EAEFF5;
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -394,9 +415,9 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  background-color: #FFFFFF;
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-strong-color);
-  border-radius: 4px;
+  border-radius: var(--radius-chip);
   padding: 1px 5px;
   font-size: 11px;
   font-family: var(--font-mono);

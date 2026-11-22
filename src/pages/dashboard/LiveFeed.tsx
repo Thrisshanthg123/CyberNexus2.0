@@ -8,7 +8,7 @@ import {
   PlusCircle,
   Check
 } from 'lucide-react';
-import { Panel, Badge, Button, Drawer } from '../../components/ui';
+import { Panel, Badge, Button, Drawer, Tooltip } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 import { Threat, Severity, ThreatSource } from '../../types';
@@ -23,7 +23,26 @@ export const LiveFeedPage: React.FC = () => {
   const [severityFilter, setSeverityFilter] = useState<Severity | 'all'>('all');
   const [sourceFilter, setSourceFilter] = useState<ThreatSource | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [addedToast, setAddedToast] = useState(false);
+  
+  // Track threat IDs permanently attached to investigation cases
+  const [investigatedIds, setInvestigatedIds] = useState<Set<string>>(() => {
+    const ids = new Set<string>();
+    investigationStore.getCases().forEach(c => {
+      c.threats.forEach(t => ids.add(t.id));
+    });
+    return ids;
+  });
+
+  useEffect(() => {
+    const syncInvestigated = () => {
+      const ids = new Set<string>();
+      investigationStore.getCases().forEach(c => {
+        c.threats.forEach(t => ids.add(t.id));
+      });
+      setInvestigatedIds(ids);
+    };
+    return investigationStore.subscribe(syncInvestigated);
+  }, []);
 
   // Simulated streaming items
   const [streamIndex, setStreamIndex] = useState(25);
@@ -57,8 +76,6 @@ export const LiveFeedPage: React.FC = () => {
     const cases = investigationStore.getCases();
     if (cases.length > 0) {
       investigationStore.addThreatToCase(cases[0].id, threat);
-      setAddedToast(true);
-      setTimeout(() => setAddedToast(false), 2500);
     }
   };
 
@@ -69,7 +86,11 @@ export const LiveFeedPage: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 700 }}>Real-Time Intelligence Ingestion Feed</h1>
-            <Badge variant="simulated">Simulated data</Badge>
+            {threatsAsync.simulated ? (
+              <Badge variant="simulated">Simulated data</Badge>
+            ) : (
+              <Badge variant="active">Live Telemetry</Badge>
+            )}
           </div>
           <p style={{ color: 'var(--color-text-small)', fontSize: 'var(--text-sm)', marginTop: '4px' }}>
             Streaming correlation stream capturing raw events across NVD, GitHub advisories, and darknet channels.
@@ -286,18 +307,33 @@ export const LiveFeedPage: React.FC = () => {
 
             {/* Quick Actions */}
             <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  handleAddToInvestigation(selectedThreat);
-                }}
-                icon={addedToast ? <Check size={14} /> : <PlusCircle size={14} />}
-              >
-                {addedToast ? 'Added to Case!' : 'Add to Investigation'}
-              </Button>
+              {selectedThreat && investigatedIds.has(selectedThreat.id) ? (
+                <Tooltip content="Record is already tracked in an active investigation case dossier.">
+                  <div>
+                    <Button
+                      variant="outline"
+                      disabled={true}
+                      aria-disabled="true"
+                      icon={<Check size={14} color="var(--accent-emerald)" />}
+                    >
+                      Added to Investigation
+                    </Button>
+                  </div>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    if (selectedThreat) handleAddToInvestigation(selectedThreat);
+                  }}
+                  icon={<PlusCircle size={14} />}
+                >
+                  Add to Investigation
+                </Button>
+              )}
               <Button
                 variant="outline"
-                onClick={() => navigate(`/dashboard/threats/${selectedThreat.id}`)}
+                onClick={() => selectedThreat && navigate(`/dashboard/threats/${selectedThreat.id}`)}
                 icon={<ExternalLink size={14} />}
               >
                 Full Threat Dossier

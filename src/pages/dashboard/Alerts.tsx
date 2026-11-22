@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, CheckCheck, ExternalLink, ShieldAlert } from 'lucide-react';
-import { Panel, Badge, Button } from '../../components/ui';
+import { Panel, Badge, Button, Tooltip } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 import { Alert } from '../../types';
@@ -42,14 +42,25 @@ export const AlertsPage: React.FC = () => {
         </div>
 
         <div>
-          <Button
-            variant="outline"
-            onClick={markAllAsRead}
-            disabled={unreadCount === 0}
-            icon={<CheckCheck size={14} />}
+          <Tooltip
+            content={
+              unreadCount === 0
+                ? 'All alerts already marked as read'
+                : `Mark ${unreadCount} unread security notifications as read.`
+            }
           >
-            Mark All as Read ({unreadCount})
-          </Button>
+            <div>
+              <Button
+                variant="outline"
+                onClick={markAllAsRead}
+                disabled={unreadCount === 0}
+                aria-disabled={unreadCount === 0 ? 'true' : undefined}
+                icon={<CheckCheck size={14} />}
+              >
+                Mark All as Read ({unreadCount})
+              </Button>
+            </div>
+          </Tooltip>
         </div>
       </div>
 
@@ -64,9 +75,9 @@ export const AlertsPage: React.FC = () => {
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
                 padding: 'var(--space-4)',
-                background: alert.read ? 'var(--color-raised)' : 'rgba(34, 211, 238, 0.04)',
+                background: alert.read ? 'var(--color-raised)' : 'var(--accent-blue-tint)',
                 border: '1px solid',
-                borderColor: alert.read ? 'var(--color-border)' : 'var(--accent-cyan)',
+                borderColor: alert.read ? 'var(--color-border)' : 'var(--accent-blue-border)',
                 borderRadius: 'var(--radius-chip)',
                 gap: 'var(--space-4)'
               }}

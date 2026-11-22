@@ -56,7 +56,12 @@ export const ThreatDetailsPage: React.FC = () => {
     );
   }
 
-  const linkedIocs = (allIocsAsync.data || []).filter(ioc => ioc.threatId === threat.id);
+  const isRealRecord = !threat.isSimulated && !threatAsync.simulated;
+  const realIndicators = (threat.iocs || []).filter(val => val && val !== 'N/A' && val.trim() !== '');
+  const linkedIocs = isRealRecord
+    ? []
+    : (allIocsAsync.data || []).filter(ioc => ioc.threatId === threat.id);
+  const iocTabCount = isRealRecord ? realIndicators.length : linkedIocs.length;
   const relatedThreats = (allThreatsAsync.data || [])
     .filter(t => t.id !== threat.id && (t.actor === threat.actor || t.category === threat.category))
     .slice(0, 4);
@@ -89,7 +94,7 @@ export const ThreatDetailsPage: React.FC = () => {
               {threat.id}
             </span>
             <Badge variant={threat.severity}>{threat.severity}</Badge>
-            {threat.isSimulated && <MockDataBadge />}
+            {(threat.isSimulated || threatAsync.simulated) && <MockDataBadge />}
           </div>
         </div>
 
@@ -123,7 +128,7 @@ export const ThreatDetailsPage: React.FC = () => {
         onChange={id => setActiveTab(id as 'summary' | 'iocs' | 'timeline' | 'evidence')}
         tabs={[
           { id: 'summary', label: 'Summary & References', icon: <Shield size={16} /> },
-          { id: 'iocs', label: 'Linked Indicators (IOCs)', count: linkedIocs.length, icon: <Key size={16} /> },
+          { id: 'iocs', label: 'Linked Indicators (IOCs)', count: iocTabCount, icon: <Key size={16} /> },
           { id: 'timeline', label: 'Telemetry Timeline', icon: <Clock size={16} /> },
           { id: 'evidence', label: 'Source Evidence & Telemetry', icon: <FileCheck2 size={16} /> }
         ]}
@@ -228,11 +233,47 @@ export const ThreatDetailsPage: React.FC = () => {
 
       {/* Tab 2: Linked IOCs */}
       {activeTab === 'iocs' && (
-        <Panel title={`Correlated Indicators of Compromise (${linkedIocs.length})`}>
+        <Panel
+          title={`Correlated Indicators of Compromise (${iocTabCount})`}
+          action={!isRealRecord ? <MockDataBadge /> : undefined}
+        >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {linkedIocs.length === 0 ? (
+            {isRealRecord ? (
+              realIndicators.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-4)', textAlign: 'center' }}>
+                  Not yet analysed
+                </div>
+              ) : (
+                realIndicators.map((val, idx) => (
+                  <div
+                    key={`${val}-${idx}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 'var(--space-3)',
+                      background: 'var(--bg-raised)',
+                      border: '1px solid var(--border-subtle-color)',
+                      borderRadius: 'var(--radius-chip)'
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                      {val}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCopy(val, `real-${idx}`)}
+                      style={{ minHeight: '30px', fontSize: 'var(--text-xs)' }}
+                      icon={copiedIoc === `real-${idx}` ? <Check size={12} /> : <Copy size={12} />}
+                    >
+                      {copiedIoc === `real-${idx}` ? 'Copied' : 'Copy'}
+                    </Button>
+                  </div>
+                ))
+              )
+            ) : linkedIocs.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-4)', textAlign: 'center' }}>
-                Not provided by source
+                Not yet analysed
               </div>
             ) : (
               linkedIocs.map(ioc => (

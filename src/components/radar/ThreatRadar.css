@@ -22,9 +22,10 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  background-color: #0B1220;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(11, 18, 32, 0.18), 0 0 0 1px rgba(11, 18, 32, 0.1);
+  background-color: var(--radar-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-card-color);
   padding: 12px;
 }
 
@@ -37,28 +38,28 @@
 /* Concentric rings & axes */
 .radar-ring {
   fill: none;
-  stroke: rgba(130, 170, 255, 0.10);
+  stroke: var(--radar-grid);
   stroke-width: 1;
 }
 
 .radar-ring-unscored {
   stroke-dasharray: 4 4;
-  stroke: rgba(130, 170, 255, 0.15);
+  stroke: var(--radar-grid-strong);
 }
 
 .radar-axis {
-  stroke: rgba(130, 170, 255, 0.10);
+  stroke: var(--radar-grid);
   stroke-width: 1;
   stroke-dasharray: 2 4;
 }
 
 .radar-tick {
-  stroke: rgba(130, 170, 255, 0.20);
+  stroke: var(--radar-grid-strong);
   stroke-width: 1;
 }
 
 .radar-sector-label {
-  fill: #9AA9C2;
+  fill: var(--radar-sector-text);
   font-size: 10px;
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
@@ -67,10 +68,10 @@
 }
 
 .radar-ring-label {
-  fill: #7D8EA8;
+  fill: var(--radar-ring-text);
   font-size: 9px;
   font-family: var(--font-mono);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* Pure CSS conic-gradient sweep */

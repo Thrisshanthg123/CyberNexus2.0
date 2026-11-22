@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Boxes, ExternalLink } from 'lucide-react';
-import { Panel, Badge, Button, Drawer } from '../../components/ui';
+import { Panel, Badge, Button, Drawer, Tooltip } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 import { Campaign } from '../../types';
@@ -22,9 +22,18 @@ export const CampaignsPage: React.FC = () => {
             <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 700 }}>Adversary Campaigns & Threat Operations</h1>
             <Badge variant="simulated">Simulated data</Badge>
           </div>
-          <p style={{ color: 'var(--color-text-small)', fontSize: 'var(--text-sm)', marginTop: '4px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginTop: '4px' }}>
             High-level multi-threat correlation tracking sophisticated nation-state and cybercrime campaigns.
           </p>
+        </div>
+
+        {/* Module Status: Planned label instead of permanently disabled button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Tooltip content="Campaign correlation engine is not built yet.">
+            <div className="ui-planned-chip-container">
+              <Badge variant="planned">Campaign detection not built yet</Badge>
+            </div>
+          </Tooltip>
         </div>
       </div>
 

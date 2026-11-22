@@ -49,6 +49,8 @@ interface FlaskRawThreat {
   timestamp?: string;
   published?: string;
   lastModified?: string;
+  collectedAt?: string;
+  collected?: string;
   mlClassification?: string;
   confidence?: number;
   riskScore?: number;
@@ -113,6 +115,7 @@ function normalizeRawThreat(raw: FlaskRawThreat, index: number): Threat {
     timestamp: raw.timestamp || raw.published || new Date().toISOString(),
     published: raw.published,
     lastModified: raw.lastModified,
+    collectedAt: raw.collectedAt || raw.collected || null,
     mlClassification,
     confidence,
     riskScore,
@@ -127,33 +130,133 @@ function normalizeRawThreat(raw: FlaskRawThreat, index: number): Threat {
   };
 }
 
+const BACKOFF_STORAGE_KEY = 'cybernexus_api_backoff';
+const BASE_BACKOFF_MS = 15000;
+const MAX_BACKOFF_MS = 120000;
+
+interface BackoffState {
+  failures: number;
+  nextRetryAt: number;
+}
+
+function getBackoffState(): BackoffState {
+  try {
+    const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(BACKOFF_STORAGE_KEY) : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        failures: Number(parsed.failures) || 0,
+        nextRetryAt: Number(parsed.nextRetryAt) || 0
+      };
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return { failures: 0, nextRetryAt: 0 };
+}
+
+function recordApiFailure(): number {
+  const prev = getBackoffState();
+  const failures = prev.failures + 1;
+  const delayMs = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * Math.pow(2, failures - 1));
+  const nextRetryAt = Date.now() + delayMs;
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(BACKOFF_STORAGE_KEY, JSON.stringify({ failures, nextRetryAt }));
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return delayMs;
+}
+
+function clearApiBackoff(): void {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(BACKOFF_STORAGE_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function isInBackoffWindow(): boolean {
+  const state = getBackoffState();
+  return state.failures > 0 && Date.now() < state.nextRetryAt;
+}
+
+let inFlightHealth: Promise<{ status: string; service: string; online: boolean }> | null = null;
+let inFlightThreats: Promise<ApiResult<Threat[]>> | null = null;
+
 export const api = {
+  resetBackoff(): void {
+    clearApiBackoff();
+  },
+
+  getBackoffDelayMs(): number {
+    const state = getBackoffState();
+    if (state.failures === 0) return 30000;
+    return Math.min(MAX_BACKOFF_MS, 30000 * Math.pow(2, state.failures));
+  },
+
   async getHealth(): Promise<{ status: string; service: string; online: boolean }> {
-    try {
-      const res = await fetch('/api/health');
-      if (res.ok) {
-        const data = await res.json();
-        return { status: data.status || 'online', service: data.service || 'CyberNexus API', online: true };
-      }
-      return { status: 'offline', service: 'CyberNexus API', online: false };
-    } catch {
+    if (isInBackoffWindow()) {
       return { status: 'offline', service: 'CyberNexus API', online: false };
     }
+    if (inFlightHealth) {
+      return inFlightHealth;
+    }
+
+    inFlightHealth = (async () => {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          clearApiBackoff();
+          const data = await res.json();
+          return { status: data.status || 'online', service: data.service || 'CyberNexus API', online: true };
+        }
+        recordApiFailure();
+        return { status: 'offline', service: 'CyberNexus API', online: false };
+      } catch {
+        recordApiFailure();
+        return { status: 'offline', service: 'CyberNexus API', online: false };
+      } finally {
+        inFlightHealth = null;
+      }
+    })();
+
+    return inFlightHealth;
   },
 
   async getThreats(): Promise<ApiResult<Threat[]>> {
     if (!USE_MOCK) {
-      try {
-        const res = await fetch('/api/threats');
-        if (res.ok) {
-          const json = await res.json();
-          const list: FlaskRawThreat[] = Array.isArray(json) ? json : (json.threats || []);
-          const normalized = list.map((t, idx) => normalizeRawThreat(t, idx));
-          return { data: normalized, error: null, simulated: false };
-        }
-      } catch (err) {
-        console.warn('Live API connection failed, falling back to mock dataset:', err);
+      if (isInBackoffWindow()) {
+        return { data: mockThreats, error: null, simulated: true };
       }
+      if (inFlightThreats) {
+        return inFlightThreats;
+      }
+
+      inFlightThreats = (async () => {
+        try {
+          const res = await fetch('/api/threats');
+          if (res.ok) {
+            clearApiBackoff();
+            const json = await res.json();
+            const list: FlaskRawThreat[] = Array.isArray(json) ? json : (json.threats || []);
+            const normalized = list.map((t, idx) => normalizeRawThreat(t, idx));
+            return { data: normalized, error: null, simulated: false };
+          }
+          recordApiFailure();
+        } catch {
+          recordApiFailure();
+        } finally {
+          inFlightThreats = null;
+        }
+        return { data: mockThreats, error: null, simulated: true };
+      })();
+
+      return inFlightThreats;
     }
 
     return { data: mockThreats, error: null, simulated: true };
@@ -265,7 +368,7 @@ export const api = {
     return { data: mockSourceFlow, error: null, simulated: true };
   },
 
-  async getTrend14d(): Promise<ApiResult<TrendDay[]>> {
+  async getTrend14d(by: 'collected' | 'published' = 'collected'): Promise<ApiResult<TrendDay[]>> {
     const threatsRes = await this.getThreats();
     if (!threatsRes.simulated && threatsRes.data) {
       const threats = threatsRes.data;
@@ -278,9 +381,11 @@ export const api = {
         const d = new Date(now - i * dayMs);
         const dateStr = d.toISOString().split('T')[0];
         
+        // Bucket strictly by collectedAt (when we ingested it), or published if explicitly selected
         const dayThreats = threats.filter(t => {
-          const tDate = (t.published || t.timestamp || '').slice(0, 10);
-          return tDate === dateStr;
+          const rawDate = by === 'collected' ? (t.collectedAt || null) : (t.published || t.timestamp || null);
+          if (!rawDate) return false;
+          return rawDate.slice(0, 10) === dateStr;
         });
 
         const critical = dayThreats.filter(t => t.severity === 'critical' || (t.cvssScore !== null && t.cvssScore !== undefined && t.cvssScore >= 9.0)).length;
@@ -369,5 +474,152 @@ export const api = {
     });
 
     return { data: { nodes, links }, error: null, simulated: true };
+  },
+
+  /**
+   * Capture baseline count and latest timestamp from /api/threats for before/after timeout comparison.
+   */
+  async getThreatsSnapshot(sourceKey?: string): Promise<{ count: number; latestTimestamp: number; ok: boolean }> {
+    try {
+      const res = await fetch('/api/threats');
+      if (!res.ok) return { count: 0, latestTimestamp: 0, ok: false };
+      const list = await res.json();
+      const records: FlaskRawThreat[] = Array.isArray(list) ? list : (list.threats || []);
+      const filtered = sourceKey
+        ? records.filter(r => (r.source || '').toLowerCase().includes(sourceKey.toLowerCase()))
+        : records;
+      let latestTimestamp = 0;
+      filtered.forEach(r => {
+        const rawTs = r.collectedAt || r.collected || r.timestamp || r.published || '';
+        const parsed = rawTs ? new Date(rawTs).getTime() : 0;
+        if (!isNaN(parsed) && parsed > latestTimestamp) {
+          latestTimestamp = parsed;
+        }
+      });
+      return { count: filtered.length, latestTimestamp, ok: true };
+    } catch {
+      return { count: 0, latestTimestamp: 0, ok: false };
+    }
+  },
+
+  /**
+   * Trigger telemetry collection from NVD backend collector endpoint (POST /api/collect/nvd).
+   * Includes 90-second timeout (60-120s range) and compares /api/threats count & latest timestamp before and after on timeout.
+   */
+  async collectNvd(timeoutMs = 90000): Promise<{ success: boolean; unconfirmed?: boolean; count?: number; message?: string }> {
+    const beforeSnap = await this.getThreatsSnapshot('nvd');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch('/api/collect/nvd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
+      });
+      if (!res.ok) {
+        throw new Error(`NVD collector returned HTTP ${res.status} (${res.statusText || 'Server Error'})`);
+      }
+      const data = await res.json();
+      return { success: true, count: data.count || 0 };
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        const afterSnap = await this.getThreatsSnapshot('nvd');
+        if (
+          beforeSnap.ok &&
+          afterSnap.ok &&
+          (afterSnap.count > beforeSnap.count || afterSnap.latestTimestamp > beforeSnap.latestTimestamp)
+        ) {
+          const delta = Math.max(0, afterSnap.count - beforeSnap.count);
+          return {
+            success: true,
+            count: delta,
+            message: `NVD request reached ${timeoutMs / 1000}s timeout, but backend ingestion was confirmed (${delta} new records / updated timestamp).`
+          };
+        }
+        return {
+          success: false,
+          unconfirmed: true,
+          message: `Collection status unconfirmed: NVD request timed out after ${timeoutMs / 1000}s with no new record count or newer timestamp detected.`
+        };
+      }
+      return { success: false, message: err?.message || 'NVD ingestion request failed (backend unreachable).' };
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+
+  /**
+   * Trigger telemetry collection from GitHub backend collector endpoint (POST /api/collect/github).
+   * Includes 90-second timeout (60-120s range) and compares /api/threats count & latest timestamp before and after on timeout.
+   */
+  async collectGithub(timeoutMs = 90000): Promise<{ success: boolean; unconfirmed?: boolean; count?: number; message?: string }> {
+    const beforeSnap = await this.getThreatsSnapshot('github');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch('/api/collect/github', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
+      });
+      if (!res.ok) {
+        throw new Error(`GitHub collector returned HTTP ${res.status} (${res.statusText || 'Server Error'})`);
+      }
+      const data = await res.json();
+      return { success: true, count: data.count || 0 };
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        const afterSnap = await this.getThreatsSnapshot('github');
+        if (
+          beforeSnap.ok &&
+          afterSnap.ok &&
+          (afterSnap.count > beforeSnap.count || afterSnap.latestTimestamp > beforeSnap.latestTimestamp)
+        ) {
+          const delta = Math.max(0, afterSnap.count - beforeSnap.count);
+          return {
+            success: true,
+            count: delta,
+            message: `GitHub request reached ${timeoutMs / 1000}s timeout, but backend ingestion was confirmed (${delta} new records / updated timestamp).`
+          };
+        }
+        return {
+          success: false,
+          unconfirmed: true,
+          message: `Collection status unconfirmed: GitHub request timed out after ${timeoutMs / 1000}s with no new record count or newer timestamp detected.`
+        };
+      }
+      return { success: false, message: err?.message || 'GitHub ingestion request failed (backend unreachable).' };
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+
+  /**
+   * Trigger telemetry collection from both live backend sources (/api/collect/nvd and /api/collect/github).
+   * Aggregates counts and captures individual errors without failing the full sequence.
+   */
+  async triggerFullCollection(timeoutMs = 90000): Promise<{
+    nvd: { success: boolean; unconfirmed?: boolean; count?: number; message?: string };
+    github: { success: boolean; unconfirmed?: boolean; count?: number; message?: string };
+    errors: string[];
+    unconfirmed: boolean;
+    totalCollected: number;
+  }> {
+    const [nvdRes, githubRes] = await Promise.allSettled([
+      this.collectNvd(timeoutMs),
+      this.collectGithub(timeoutMs)
+    ]);
+
+    const nvd = nvdRes.status === 'fulfilled' ? nvdRes.value : { success: false, message: 'NVD request rejected' };
+    const github = githubRes.status === 'fulfilled' ? githubRes.value : { success: false, message: 'GitHub request rejected' };
+    const errors: string[] = [];
+    if (!nvd.success) errors.push(`NVD: ${nvd.message || 'Error'}`);
+    if (!github.success) errors.push(`GitHub: ${github.message || 'Error'}`);
+    const unconfirmed = Boolean(nvd.unconfirmed || github.unconfirmed);
+
+    const totalCollected = (nvd.count || 0) + (github.count || 0);
+    return { nvd, github, errors, unconfirmed, totalCollected };
   }
 };

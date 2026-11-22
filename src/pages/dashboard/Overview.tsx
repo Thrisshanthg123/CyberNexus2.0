@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -35,8 +35,8 @@ export const OverviewPage: React.FC = () => {
   const threatsAsync = useAsync(() => api.getThreats());
   const radarAsync = useAsync(() => api.getRadarBlips());
   const severityAsync = useAsync(() => api.getSeverityStats());
-  const trendAsync = useAsync(() => api.getTrend14d());
-  const campaignsAsync = useAsync(() => api.getCampaigns());
+  const [velocityMode, setVelocityMode] = useState<'collected' | 'published'>('collected');
+  const trendAsync = useAsync(() => api.getTrend14d(velocityMode), [velocityMode]);
 
   const threats = threatsAsync.data || [];
   const loading = threatsAsync.loading && threats.length === 0;
@@ -44,20 +44,23 @@ export const OverviewPage: React.FC = () => {
   // Real KPI calculations from /api/threats
   const totalThreats = threats.length;
   const isLive = !threatsAsync.simulated && !threatsAsync.error;
+  const hasDisclosureData = useMemo(() => threats.some(t => Boolean(t.published)), [threats]);
 
   const criticalThreats = useMemo(() => {
     return threats.filter(t => t.severity === 'critical' || (t.cvssScore !== null && t.cvssScore !== undefined && t.cvssScore >= 9.0)).length;
   }, [threats]);
 
+  // New Today: bucket strictly by collectedAt (when ingested into CyberNexus), not publishedAt
   const newToday = useMemo(() => {
     const oneDayAgo = Date.now() - 24 * 3600 * 1000;
     return threats.filter(t => {
-      const time = new Date(t.timestamp).getTime();
+      if (!t.collectedAt) return false;
+      const time = new Date(t.collectedAt).getTime();
       return !isNaN(time) && time >= oneDayAgo;
     }).length;
   }, [threats]);
 
-  // Real 7-day sparkline buckets from real published/timestamp
+  // Real 7-day sparkline buckets from collectedAt (when ingested)
   const realSparkline = useMemo(() => {
     const buckets = Array(7).fill(0);
     const now = Date.now();
@@ -65,12 +68,14 @@ export const OverviewPage: React.FC = () => {
     let hasData = false;
 
     threats.forEach(t => {
-      const time = new Date(t.published || t.timestamp).getTime();
-      if (!isNaN(time)) {
-        const diffDays = Math.floor((now - time) / dayMs);
-        if (diffDays >= 0 && diffDays < 7) {
-          buckets[6 - diffDays]++;
-          hasData = true;
+      if (t.collectedAt) {
+        const time = new Date(t.collectedAt).getTime();
+        if (!isNaN(time)) {
+          const diffDays = Math.floor((now - time) / dayMs);
+          if (diffDays >= 0 && diffDays < 7) {
+            buckets[6 - diffDays]++;
+            hasData = true;
+          }
         }
       }
     });
@@ -87,28 +92,19 @@ export const OverviewPage: React.FC = () => {
     threats
       .filter(t => t.severity === 'critical' || (t.cvssScore !== null && t.cvssScore !== undefined && t.cvssScore >= 9.0))
       .forEach(t => {
-        const time = new Date(t.published || t.timestamp).getTime();
-        if (!isNaN(time)) {
-          const diffDays = Math.floor((now - time) / dayMs);
-          if (diffDays >= 0 && diffDays < 7) {
-            buckets[6 - diffDays]++;
-            hasData = true;
+        if (t.collectedAt) {
+          const time = new Date(t.collectedAt).getTime();
+          if (!isNaN(time)) {
+            const diffDays = Math.floor((now - time) / dayMs);
+            if (diffDays >= 0 && diffDays < 7) {
+              buckets[6 - diffDays]++;
+              hasData = true;
+            }
           }
         }
       });
 
     return hasData ? buckets : undefined;
-  }, [threats]);
-
-  // Active campaigns (Condition 2: must show MockDataBadge)
-  const activeCampaigns = campaignsAsync.data?.filter(c => c.status === 'Active').length || 3;
-
-  // Exploited CVEs only if data supports it
-  const exploitedCves = useMemo(() => {
-    return threats.filter(t => 
-      (t.category || '').toLowerCase().includes('exploit') ||
-      (t.tags || []).some(tag => tag.toLowerCase().includes('exploit'))
-    ).length;
   }, [threats]);
 
   if (loading) {
@@ -212,32 +208,28 @@ export const OverviewPage: React.FC = () => {
           value={newToday}
           delta="Last 24 hours"
           deltaType="neutral"
-          subtext="Captured in last 24h"
+          subtext={newToday > 0 ? "Ingested in last 24h" : "No ingestions in last 24h"}
           icon={<Clock size={16} />}
           iconVariant="emerald"
           sparklineData={newToday > 0 ? realSparkline : undefined}
         />
         <KpiCard
           label="Active Adversary Campaigns"
-          value={activeCampaigns}
-          delta="Attribution lead"
+          value="Not built yet"
           deltaType="neutral"
-          badge={<MockDataBadge>Mock</MockDataBadge>}
-          subtext="Correlated threat clusters"
+          badge={<Badge variant="planned">Planned</Badge>}
+          subtext="Campaign correlation engine not built yet"
           icon={<Zap size={16} />}
           iconVariant="purple"
-          sparklineData={[2, 2, 3, 3, 4, 3, activeCampaigns]}
           onClick={() => navigate('/dashboard/campaigns')}
         />
         <KpiCard
           label="Exploited in Wild CVEs"
-          value={exploitedCves}
-          delta={exploitedCves > 0 ? "CISA KEV Match" : "None detected"}
-          deltaType={exploitedCves > 0 ? "critical" : "neutral"}
-          subtext={exploitedCves > 0 ? "Active in KEV catalog" : "Zero active KEV"}
+          value="Not available from collected data"
+          deltaType="neutral"
+          subtext="No exploit or KEV fields in collected records"
           icon={<Flame size={16} />}
           iconVariant="amber"
-          sparklineData={exploitedCves > 0 ? realSparkline : undefined}
         />
       </div>
 
@@ -294,16 +286,58 @@ export const OverviewPage: React.FC = () => {
 
           {/* 14-Day Velocity Trend */}
           <Panel
-            title="14-Day Ingestion Velocity"
-            description="Temporal trend of aggregate telemetry vs critical escalations."
+            title={velocityMode === 'collected' ? "14-Day Ingestion Velocity" : "14-Day Disclosure Velocity"}
+            description={
+              velocityMode === 'collected'
+                ? "Temporal trend of aggregate telemetry by ingestion date (collectedAt)."
+                : "Temporal trend of aggregate telemetry by disclosure date (publishedAt)."
+            }
             action={
-              trendAsync.simulated ? (
-                <MockDataBadge>Simulated data</MockDataBadge>
-              ) : (
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  Real Telemetry
-                </span>
-              )
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {hasDisclosureData && (
+                  <div style={{ display: 'inline-flex', background: 'var(--bg-raised)', border: '1px solid var(--border-subtle-color)', borderRadius: 'var(--radius-sm)', padding: '2px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setVelocityMode('collected')}
+                      style={{
+                        border: 'none',
+                        background: velocityMode === 'collected' ? 'var(--bg-surface)' : 'transparent',
+                        color: velocityMode === 'collected' ? 'var(--text-primary)' : 'var(--text-muted)',
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontWeight: velocityMode === 'collected' ? 600 : 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Ingested
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVelocityMode('published')}
+                      style={{
+                        border: 'none',
+                        background: velocityMode === 'published' ? 'var(--bg-surface)' : 'transparent',
+                        color: velocityMode === 'published' ? 'var(--text-primary)' : 'var(--text-muted)',
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontWeight: velocityMode === 'published' ? 600 : 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Disclosed
+                    </button>
+                  </div>
+                )}
+                {trendAsync.simulated ? (
+                  <MockDataBadge>Simulated data</MockDataBadge>
+                ) : (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    Real Telemetry
+                  </span>
+                )}
+              </div>
             }
           >
             <div style={{ height: '170px' }}>

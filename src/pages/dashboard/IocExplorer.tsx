@@ -9,7 +9,7 @@ import {
   CheckSquare,
   Square
 } from 'lucide-react';
-import { Panel, Badge, Button } from '../../components/ui';
+import { Panel, Badge, Button, Tooltip } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 
@@ -112,22 +112,45 @@ export const IocExplorerPage: React.FC = () => {
             {isRevealed ? 'Raw IOCs Active (Dangerous)' : 'Defanged (Safe Mode)'}
           </Button>
 
-          <Button
-            variant="outline"
-            disabled={selectedIds.size === 0}
-            onClick={() => exportSelected('csv')}
-            icon={<Download size={14} />}
+          <Tooltip
+            content={
+              selectedIds.size === 0
+                ? 'No indicators selected in table to export'
+                : `Export ${selectedIds.size} selected indicators as CSV.`
+            }
           >
-            Export CSV ({selectedIds.size})
-          </Button>
-          <Button
-            variant="outline"
-            disabled={selectedIds.size === 0}
-            onClick={() => exportSelected('json')}
-            icon={<Download size={14} />}
+            <div>
+              <Button
+                variant="outline"
+                disabled={selectedIds.size === 0}
+                aria-disabled={selectedIds.size === 0 ? 'true' : undefined}
+                onClick={() => exportSelected('csv')}
+                icon={<Download size={14} />}
+              >
+                Export CSV ({selectedIds.size})
+              </Button>
+            </div>
+          </Tooltip>
+
+          <Tooltip
+            content={
+              selectedIds.size === 0
+                ? 'No indicators selected in table to export'
+                : `Export ${selectedIds.size} selected indicators as JSON.`
+            }
           >
-            Export JSON ({selectedIds.size})
-          </Button>
+            <div>
+              <Button
+                variant="outline"
+                disabled={selectedIds.size === 0}
+                aria-disabled={selectedIds.size === 0 ? 'true' : undefined}
+                onClick={() => exportSelected('json')}
+                icon={<Download size={14} />}
+              >
+                Export JSON ({selectedIds.size})
+              </Button>
+            </div>
+          </Tooltip>
         </div>
       </div>
 

@@ -15,8 +15,8 @@ import { TrendDay } from '../../services/mock/trend14d';
 import './CyberCharts.css';
 
 // Helper to get CSS variable dynamically from the DOM
-function useCssVar(varName: string, fallback: string): string {
-  const [val, setVal] = useState(fallback);
+function useCssVar(varName: string): string {
+  const [val, setVal] = useState(`var(${varName})`);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -57,11 +57,12 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
   const [hoveredBlip, setHoveredBlip] = useState<RadarBlip | null>(null);
   const chartId = useId();
 
-  const colorCritical = useCssVar('--severity-critical', '#DC2626');
-  const colorHigh = useCssVar('--severity-high', '#D97706');
-  const colorMedium = useCssVar('--severity-medium', '#CA8A04');
-  const colorLow = useCssVar('--severity-low', '#16A34A');
-  const colorCyan = useCssVar('--accent-cyan', '#22D3EE');
+  const colorCritical = useCssVar('--severity-critical');
+  const colorHigh = useCssVar('--severity-high');
+  const colorMedium = useCssVar('--severity-medium');
+  const colorLow = useCssVar('--severity-low');
+  const colorCyan = useCssVar('--accent-cyan');
+  const colorMuted = useCssVar('--text-muted');
 
   if (loading) {
     return <Skeleton width={width} height={height} borderRadius="50%" />;
@@ -88,7 +89,7 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
         'Data Exfiltration': colorMedium,
         'Privilege Escalation': colorHigh,
         'Botnet': colorLow,
-        'Phishing': '#8A9BB4',
+        'Phishing': colorMuted,
         'Vulnerability-Disclosure': colorCyan,
         'Exploit-in-Wild': colorCritical
       };
@@ -125,7 +126,16 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
       className="cyber-chart-wrapper"
       role="img"
       aria-label={`Threat Radar showing ${totalCount} active correlated threats, including ${criticalCount} critical blips in the central perimeter ring.`}
-      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'var(--radar-bg)',
+        borderRadius: 'var(--radius-md)',
+        padding: '12px'
+      }}
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}
@@ -141,7 +151,7 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
           </linearGradient>
         </defs>
 
-        {/* Concentric Severity Rings at 6% Opacity */}
+        {/* Concentric Severity Rings */}
         {[0.25, 0.5, 0.75, 1.0].map((fraction, i) => (
           <circle
             key={i}
@@ -149,15 +159,15 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
             cy={cy}
             r={maxRadius * fraction}
             fill="none"
-            stroke="rgba(255, 255, 255, 0.06)"
+            stroke="var(--radar-grid)"
             strokeWidth={1}
             strokeDasharray={fraction === 1.0 ? 'none' : '2 3'}
           />
         ))}
 
-        {/* Crosshair Axes at 6% Opacity */}
-        <line x1={cx} y1={cy - maxRadius} x2={cx} y2={cy + maxRadius} stroke="rgba(255, 255, 255, 0.06)" strokeWidth={1} />
-        <line x1={cx - maxRadius} y1={cy} x2={cx + maxRadius} y2={cy} stroke="rgba(255, 255, 255, 0.06)" strokeWidth={1} />
+        {/* Crosshair Axes */}
+        <line x1={cx} y1={cy - maxRadius} x2={cx} y2={cy + maxRadius} stroke="var(--radar-grid)" strokeWidth={1} />
+        <line x1={cx - maxRadius} y1={cy} x2={cx + maxRadius} y2={cy} stroke="var(--radar-grid)" strokeWidth={1} />
 
         {/* Rotating 60-degree Radar Sweep */}
         <g className="radar-sweep-arm" style={{ transformOrigin: `${cx}px ${cy}px` }}>
@@ -212,7 +222,7 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
                 cy={by}
                 r={blipRadius}
                 fill={blipColor}
-                stroke="#060B14"
+                stroke="var(--radar-blip-stroke)"
                 strokeWidth={1.5}
               />
             </g>
@@ -285,10 +295,10 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
 }) => {
   const [activeItem, setActiveItem] = useState<SeverityStat | null>(null);
 
-  const colorCritical = useCssVar('--severity-critical', '#DC2626');
-  const colorHigh = useCssVar('--severity-high', '#D97706');
-  const colorMedium = useCssVar('--severity-medium', '#CA8A04');
-  const colorLow = useCssVar('--severity-low', '#16A34A');
+  const colorCritical = useCssVar('--severity-critical');
+  const colorHigh = useCssVar('--severity-high');
+  const colorMedium = useCssVar('--severity-medium');
+  const colorLow = useCssVar('--severity-low');
 
   if (loading) return <Skeleton width={size} height={size} borderRadius="50%" />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
@@ -333,15 +343,31 @@ export const SeverityRings: React.FC<SeverityRingsProps> = ({
               onBlur={() => setActiveItem(null)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Background Track in Light Subtle Gray */}
+              {/* Background Track */}
               <circle
                 cx={center}
                 cy={center}
                 r={r}
                 fill="none"
-                stroke="#EEF2F6"
+                stroke="var(--chart-track)"
                 strokeWidth={strokeWidth}
               />
+              {/* 1px dark outline boundary for medium mark */}
+              {item.severity === 'medium' && (
+                <circle
+                  cx={center}
+                  cy={center}
+                  r={r}
+                  fill="none"
+                  stroke="var(--severity-medium-outline)"
+                  strokeWidth={strokeWidth + 2}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  transform={`rotate(-90 ${center} ${center})`}
+                  style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+                />
+              )}
               {/* Progress Arc */}
               <circle
                 cx={center}
@@ -406,9 +432,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
 }) => {
   const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null);
 
-  const colorBase = useCssVar('--color-raised', '#101B2E');
-  const colorCyan = useCssVar('--accent-cyan', '#22D3EE');
-  const colorBorder = useCssVar('--color-border', '#1B2740');
+  const colorBorder = useCssVar('--color-border');
 
   if (loading) return <Skeleton height={180} />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
@@ -418,12 +442,12 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
   const getCellColor = (count: number) => {
-    if (count === 0) return colorBase;
+    if (count === 0) return 'var(--heat-0)';
     const ratio = count / maxCount;
-    if (ratio < 0.25) return 'rgba(34, 211, 238, 0.2)';
-    if (ratio < 0.5) return 'rgba(34, 211, 238, 0.45)';
-    if (ratio < 0.75) return 'rgba(34, 211, 238, 0.75)';
-    return colorCyan;
+    if (ratio <= 0.25) return 'var(--heat-1)';
+    if (ratio <= 0.5) return 'var(--heat-2)';
+    if (ratio <= 0.75) return 'var(--heat-3)';
+    return 'var(--heat-4)';
   };
 
   return (
@@ -431,12 +455,12 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
       className="cyber-chart-wrapper"
       role="img"
       aria-label="Activity Heatmap showing 7-day by 24-hour incident intensity"
-      style={{ overflowX: 'auto', width: '100%' }}
+      style={{ overflowX: 'auto', width: '100%', alignItems: 'flex-start' }}
     >
       <div style={{ minWidth: '580px', width: '100%' }}>
         {/* Hour Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(24, 1fr)', gap: '2px', marginBottom: '4px' }}>
-          <span />
+        <div style={{ display: 'grid', gridTemplateColumns: '48px repeat(24, 1fr)', gap: '2px', marginBottom: '4px' }}>
+          <span style={{ position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 1 }} />
           {Array.from({ length: 24 }).map((_, h) => (
             <span
               key={h}
@@ -460,7 +484,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
               key={dayName}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '40px repeat(24, 1fr)',
+                gridTemplateColumns: '48px repeat(24, 1fr)',
                 gap: '2px',
                 marginBottom: '3px',
                 alignItems: 'center'
@@ -471,7 +495,11 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
                   fontSize: '11px',
                   color: 'var(--color-text-small)',
                   fontFamily: 'var(--font-mono)',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  position: 'sticky',
+                  left: 0,
+                  background: 'var(--bg-surface)',
+                  zIndex: 1
                 }}
               >
                 {dayName}
@@ -500,6 +528,36 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         })}
       </div>
 
+      {/* Legend */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: '4px',
+          marginTop: '8px',
+          fontSize: '11px',
+          color: 'var(--color-text-small)',
+          fontFamily: 'var(--font-mono)'
+        }}
+      >
+        <span>Less</span>
+        {['var(--heat-0)', 'var(--heat-1)', 'var(--heat-2)', 'var(--heat-3)', 'var(--heat-4)'].map((token, i) => (
+          <span
+            key={i}
+            style={{
+              display: 'inline-block',
+              width: '12px',
+              height: '12px',
+              borderRadius: '2px',
+              backgroundColor: token,
+              border: '1px solid var(--color-border)'
+            }}
+          />
+        ))}
+        <span>More</span>
+      </div>
+
       {hoveredCell && (
         <div
           style={{
@@ -514,7 +572,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
           }}
         >
           {hoveredCell.dayName} at {String(hoveredCell.hour).padStart(2, '0')}:00 —{' '}
-          <strong style={{ color: 'var(--accent-cyan)' }}>{hoveredCell.count} incidents</strong>
+          <strong style={{ color: 'var(--accent-blue)' }}>{hoveredCell.count} incidents</strong>
         </div>
       )}
     </div>
@@ -541,7 +599,7 @@ export const SourceFlow: React.FC<SourceFlowProps> = ({
 }) => {
   const [hoveredLink, setHoveredLink] = useState<FlowLink | null>(null);
 
-  const colorBorder = useCssVar('--color-border', '#1B2740');
+  const colorBorder = useCssVar('--color-border');
 
   if (loading) return <Skeleton height={height} />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
@@ -692,8 +750,10 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
   onRetry,
   height = 180
 }) => {
-  const colorCyan = useCssVar('--accent-cyan', '#059669');
-  const colorCritical = useCssVar('--severity-critical', '#DC2626');
+  const colorCyan = useCssVar('--accent-cyan');
+  const colorCritical = useCssVar('--severity-critical');
+  const colorGrid = useCssVar('--chart-grid');
+  const colorAxis = useCssVar('--chart-axis');
 
   if (loading) return <Skeleton height={height} />;
   if (error) return <ErrorState message={error} onRetry={onRetry} />;
@@ -715,7 +775,7 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
     >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
-          <CartesianGrid stroke="#E8EDF2" strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid stroke={colorGrid} strokeDasharray="3 3" vertical={false} />
           <defs>
             <linearGradient id="trendCyanGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colorCyan} stopOpacity={0.2} />
@@ -728,14 +788,14 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
           </defs>
           <XAxis
             dataKey="date"
-            stroke="#5B6779"
+            stroke={colorAxis}
             fontSize={11}
             fontFamily="var(--font-mono)"
             tickLine={false}
             tickFormatter={val => val.slice(5)}
           />
           <YAxis
-            stroke="#5B6779"
+            stroke={colorAxis}
             fontSize={11}
             fontFamily="var(--font-mono)"
             tickLine={false}
@@ -747,25 +807,25 @@ export const GlowTrend: React.FC<GlowTrendProps> = ({
                 return (
                   <div
                     style={{
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid #CBD3DD',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-card-color)',
                       padding: '8px 12px',
-                      borderRadius: '8px',
+                      borderRadius: 'var(--radius-md)',
                       fontSize: '12px',
-                      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08)',
-                      color: '#0F172A'
+                      boxShadow: 'var(--shadow-overlay)',
+                      color: 'var(--text-primary)'
                     }}
                   >
-                    <div style={{ color: '#5B6779', fontFamily: 'var(--font-mono)', marginBottom: '4px', fontSize: '11px' }}>
+                    <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '4px', fontSize: '11px' }}>
                       {label}
                     </div>
-                    <div style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>
+                    <div style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>
                       Total Threats: {day.total}
                     </div>
-                    <div style={{ color: 'var(--severity-critical)', fontWeight: 500 }}>
+                    <div style={{ color: 'var(--severity-critical-text)', fontWeight: 500 }}>
                       Critical: {day.critical}
                     </div>
-                    <div style={{ color: 'var(--severity-high)', fontWeight: 500 }}>
+                    <div style={{ color: 'var(--severity-high-text)', fontWeight: 500 }}>
                       High: {day.high}
                     </div>
                   </div>

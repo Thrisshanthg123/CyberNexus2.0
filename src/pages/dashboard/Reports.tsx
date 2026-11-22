@@ -5,7 +5,7 @@ import {
   Eye,
   Table
 } from 'lucide-react';
-import { Panel, Badge, Button, Tabs } from '../../components/ui';
+import { Panel, Badge, Button, Tabs, Tooltip } from '../../components/ui';
 import { useAsync } from '../../hooks';
 import { api } from '../../services/api';
 import { Severity, ThreatSource } from '../../types';
@@ -86,20 +86,45 @@ export const ReportsPage: React.FC = () => {
 
         {/* Download Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Button
-            variant="primary"
-            onClick={() => handleDownload('csv')}
-            icon={<Download size={14} />}
+          <Tooltip
+            content={
+              filteredThreats.length === 0
+                ? 'No matching records in selected scope to export'
+                : `Export ${filteredThreats.length} threat records as CSV.`
+            }
           >
-            Export Real CSV ({filteredThreats.length})
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => handleDownload('json')}
-            icon={<Download size={14} />}
+            <div>
+              <Button
+                variant="primary"
+                onClick={() => handleDownload('csv')}
+                disabled={filteredThreats.length === 0}
+                aria-disabled={filteredThreats.length === 0 ? 'true' : undefined}
+                icon={<Download size={14} />}
+              >
+                Export Real CSV ({filteredThreats.length})
+              </Button>
+            </div>
+          </Tooltip>
+
+          <Tooltip
+            content={
+              filteredThreats.length === 0
+                ? 'No matching records in selected scope to export'
+                : `Export ${filteredThreats.length} threat records as JSON.`
+            }
           >
-            Export Real JSON ({filteredThreats.length})
-          </Button>
+            <div>
+              <Button
+                variant="secondary"
+                onClick={() => handleDownload('json')}
+                disabled={filteredThreats.length === 0}
+                aria-disabled={filteredThreats.length === 0 ? 'true' : undefined}
+                icon={<Download size={14} />}
+              >
+                Export Real JSON ({filteredThreats.length})
+              </Button>
+            </div>
+          </Tooltip>
         </div>
       </div>
 
@@ -107,7 +132,7 @@ export const ReportsPage: React.FC = () => {
       <Panel title="Report Configuration & Scope">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
           <div>
-            <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: 'var(--text-12)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               Report Document Title
             </label>
             <input
@@ -116,19 +141,19 @@ export const ReportsPage: React.FC = () => {
               onChange={e => setReportTitle(e.target.value)}
               style={{
                 width: '100%',
-                background: 'var(--color-raised)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-chip)',
+                background: 'var(--bg-raised)',
+                border: '1px solid var(--border-subtle-color)',
+                borderRadius: 'var(--radius-sm)',
                 padding: 'var(--space-2) var(--space-3)',
-                color: 'var(--color-text)',
-                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+                fontSize: 'var(--text-14)',
                 outline: 'none'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: 'var(--text-12)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               Severity Scope
             </label>
             <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
@@ -137,13 +162,13 @@ export const ReportsPage: React.FC = () => {
                   key={sev}
                   onClick={() => setSeverityFilter(sev)}
                   style={{
-                    background: severityFilter === sev ? 'var(--color-raised)' : 'transparent',
-                    color: severityFilter === sev ? 'var(--accent-cyan)' : 'var(--color-text-small)',
+                    background: severityFilter === sev ? 'var(--bg-raised)' : 'transparent',
+                    color: severityFilter === sev ? 'var(--accent-emerald)' : 'var(--text-secondary)',
                     border: '1px solid',
-                    borderColor: severityFilter === sev ? 'var(--accent-cyan)' : 'var(--color-border)',
+                    borderColor: severityFilter === sev ? 'var(--accent-emerald)' : 'var(--border-subtle-color)',
                     borderRadius: 'var(--radius-chip)',
                     padding: 'var(--space-1) var(--space-2)',
-                    fontSize: 'var(--text-xs)',
+                    fontSize: 'var(--text-12)',
                     cursor: 'pointer',
                     textTransform: 'capitalize'
                   }}
@@ -155,7 +180,7 @@ export const ReportsPage: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: 'var(--text-12)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               Source Ingestion Filter
             </label>
             <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
@@ -164,13 +189,13 @@ export const ReportsPage: React.FC = () => {
                   key={src}
                   onClick={() => setSourceFilter(src)}
                   style={{
-                    background: sourceFilter === src ? 'var(--color-raised)' : 'transparent',
-                    color: sourceFilter === src ? 'var(--accent-cyan)' : 'var(--color-text-small)',
+                    background: sourceFilter === src ? 'var(--bg-raised)' : 'transparent',
+                    color: sourceFilter === src ? 'var(--accent-emerald)' : 'var(--text-secondary)',
                     border: '1px solid',
-                    borderColor: sourceFilter === src ? 'var(--accent-cyan)' : 'var(--color-border)',
+                    borderColor: sourceFilter === src ? 'var(--accent-emerald)' : 'var(--border-subtle-color)',
                     borderRadius: 'var(--radius-chip)',
                     padding: 'var(--space-1) var(--space-2)',
-                    fontSize: 'var(--text-xs)',
+                    fontSize: 'var(--text-12)',
                     cursor: 'pointer'
                   }}
                 >
@@ -196,11 +221,11 @@ export const ReportsPage: React.FC = () => {
       {previewTab === 'preview' && (
         <Panel title="Report Summary & Included Findings Preview">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{ background: 'var(--color-raised)', padding: 'var(--space-4)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)' }}>
-              <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--accent-cyan)', marginBottom: 'var(--space-1)' }}>
+            <div style={{ background: 'var(--bg-raised)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)' }}>
+              <div style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--accent-emerald)', marginBottom: 'var(--space-1)' }}>
                 {reportTitle}
               </div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
                 Scope: {severityFilter.toUpperCase()} severity • {sourceFilter} sources • {filteredThreats.length} correlated records
               </div>
             </div>
@@ -221,7 +246,7 @@ export const ReportsPage: React.FC = () => {
                 <tbody>
                   {filteredThreats.slice(0, 8).map(threat => (
                     <tr key={threat.id}>
-                      <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{threat.id}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)' }}>{threat.id}</td>
                       <td style={{ fontFamily: 'var(--font-mono)' }}>{threat.cveId}</td>
                       <td>{threat.title}</td>
                       <td><Badge variant={threat.severity}>{threat.severity}</Badge></td>
@@ -234,7 +259,7 @@ export const ReportsPage: React.FC = () => {
               </table>
             </div>
             {filteredThreats.length > 8 && (
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', textAlign: 'center' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', textAlign: 'center' }}>
                 Showing first 8 of {filteredThreats.length} total rows in report preview.
               </div>
             )}
@@ -244,7 +269,7 @@ export const ReportsPage: React.FC = () => {
 
       {previewTab === 'rawCsv' && (
         <Panel title="Raw CSV Data Output">
-          <div style={{ background: 'var(--color-base)', padding: 'var(--space-4)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text)', maxHeight: '350px', overflowY: 'auto' }}>
+          <div style={{ background: 'var(--bg-app)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', maxHeight: '350px', overflowY: 'auto' }}>
             <pre style={{ margin: 0 }}>{generateCsvContent()}</pre>
           </div>
         </Panel>
@@ -252,7 +277,7 @@ export const ReportsPage: React.FC = () => {
 
       {previewTab === 'rawJson' && (
         <Panel title="Raw JSON Data Output">
-          <div style={{ background: 'var(--color-base)', padding: 'var(--space-4)', borderRadius: 'var(--radius-chip)', border: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text)', maxHeight: '350px', overflowY: 'auto' }}>
+          <div style={{ background: 'var(--bg-app)', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle-color)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', maxHeight: '350px', overflowY: 'auto' }}>
             <pre style={{ margin: 0 }}>{generateJsonContent()}</pre>
           </div>
         </Panel>

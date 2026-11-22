@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, useRef } from 'react';
+import React, { useState, useEffect, ReactNode, useRef, useId } from 'react';
 import {
   AlertCircle,
   AlertTriangle,
@@ -120,7 +120,16 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         </div>
       </div>
       <div className="ui-kpi-value-row">
-        <span className="ui-kpi-value tabular-nums">{value}</span>
+        <span
+          className="ui-kpi-value tabular-nums"
+          style={
+            typeof value === 'string' && isNaN(Number(value))
+              ? { fontSize: 'var(--text-14)', fontWeight: 600, color: 'var(--text-muted)', lineHeight: 1.35 }
+              : undefined
+          }
+        >
+          {value}
+        </span>
         {delta && (
           <span className={`ui-kpi-delta ui-kpi-delta-${deltaType}`}>
             {delta}
@@ -452,24 +461,34 @@ export function DataTable<T>({
             Page {currentPage} of {totalPages} ({data.length} total)
           </span>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              aria-label="Previous page"
-            >
-              <ChevronLeft size={14} />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              aria-label="Next page"
-            >
-              <ChevronRight size={14} />
-            </Button>
+            <Tooltip content={currentPage <= 1 ? 'Already on first page' : 'Previous page'}>
+              <div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={currentPage <= 1}
+                  aria-disabled={currentPage <= 1 ? 'true' : undefined}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={14} />
+                </Button>
+              </div>
+            </Tooltip>
+            <Tooltip content={currentPage >= totalPages ? 'Already on last page' : 'Next page'}>
+              <div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={currentPage >= totalPages}
+                  aria-disabled={currentPage >= totalPages ? 'true' : undefined}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={14} />
+                </Button>
+              </div>
+            </Tooltip>
           </div>
         </div>
       )}
@@ -690,22 +709,64 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeId, onChange, className 
 export interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
+  ariaLabel?: string;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+function isElementDisabled(el: ReactNode): boolean {
+  if (!React.isValidElement(el)) return false;
+  const props = el.props as any;
+  if (Boolean(props.disabled) || props['aria-disabled'] === true || props['aria-disabled'] === 'true') {
+    return true;
+  }
+  if (React.isValidElement(props.children)) {
+    return isElementDisabled(props.children);
+  }
+  return false;
+}
+
+function attachAriaDescribedBy(el: ReactNode, id: string): ReactNode {
+  if (!React.isValidElement(el)) return el;
+  const props = el.props as any;
+
+  if (React.isValidElement(props.children)) {
+    return React.cloneElement(el as React.ReactElement<any>, {
+      children: attachAriaDescribedBy(props.children, id)
+    });
+  }
+
+  const existing = props['aria-describedby'];
+  const merged = existing ? `${existing} ${id}` : id;
+  return React.cloneElement(el as React.ReactElement<any>, {
+    'aria-describedby': merged
+  });
+}
+
+export const Tooltip: React.FC<TooltipProps> = ({ content, children, ariaLabel }) => {
   const [visible, setVisible] = useState(false);
+  const reactId = useId();
+  const tooltipId = `ui-tip-${reactId.replace(/:/g, '')}`;
+
+  const isDisabled = isElementDisabled(children);
+  const enhancedChildren = attachAriaDescribedBy(children, tooltipId);
 
   return (
     <div
       className="ui-tooltip-wrapper"
+      tabIndex={isDisabled ? 0 : undefined}
+      role={isDisabled ? 'group' : undefined}
+      aria-describedby={isDisabled ? tooltipId : undefined}
+      aria-label={isDisabled ? (typeof content === 'string' ? content : ariaLabel) : undefined}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
       onFocus={() => setVisible(true)}
       onBlur={() => setVisible(false)}
+      onKeyDown={e => {
+        if (e.key === 'Escape') setVisible(false);
+      }}
     >
-      {children}
+      {enhancedChildren}
       {visible && content && (
-        <div className="ui-tooltip" role="tooltip">
+        <div id={tooltipId} className="ui-tooltip" role="tooltip">
           {content}
         </div>
       )}

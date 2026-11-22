@@ -1,7 +1,7 @@
 /* ============================================================================
-   CYBERNEXUS UI PRIMITIVES CSS - LIGHT ENTERPRISE THEME
+   CYBERNEXUS UI PRIMITIVES CSS - UNIFIED LIGHT THEME
    Location: src/components/ui/primitives.css
-   Soft white surfaces, emerald accent, friendly rounded cards, AA contrast
+   Soft white cards, lighter grey canvas, green accent, AA/AAA contrast
    ============================================================================ */
 
 /* 1. Panel & PanelHeader */
@@ -212,39 +212,64 @@
 
 .ui-severity-badge-critical,
 .ui-badge-critical {
-  background-color: var(--severity-critical-tint);
-  color: var(--severity-critical-text);
+  background-color: var(--sev-critical-bg);
+  color: var(--sev-critical-text);
+  border: 1px solid var(--sev-critical-border);
 }
 
 .ui-severity-badge-high,
 .ui-badge-high {
-  background-color: var(--severity-high-tint);
-  color: var(--severity-high-text);
+  background-color: var(--sev-high-bg);
+  color: var(--sev-high-text);
+  border: 1px solid var(--sev-high-border);
 }
 
 .ui-severity-badge-medium,
 .ui-badge-medium {
-  background-color: var(--severity-medium-tint);
-  color: var(--severity-medium-text);
+  background-color: var(--sev-medium-bg);
+  color: var(--sev-medium-text);
+  border: 1px solid var(--sev-medium-border);
 }
 
 .ui-severity-badge-low,
 .ui-badge-low {
-  background-color: var(--severity-low-tint);
-  color: var(--severity-low-text);
+  background-color: var(--sev-low-bg);
+  color: var(--sev-low-text);
+  border: 1px solid var(--sev-low-border);
 }
 
 .ui-severity-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
   flex-shrink: 0;
+  display: inline-block;
 }
 
-.ui-severity-badge-critical .ui-severity-dot { background-color: var(--severity-critical); }
-.ui-severity-badge-high .ui-severity-dot { background-color: var(--severity-high); }
-.ui-severity-badge-medium .ui-severity-dot { background-color: var(--severity-medium); }
-.ui-severity-badge-low .ui-severity-dot { background-color: var(--severity-low); }
+/* Dual visual encoding: shape + bright color so severity never relies on color alone */
+.ui-severity-badge-critical .ui-severity-dot {
+  background-color: var(--severity-critical);
+  border-radius: 1px;
+  transform: rotate(45deg); /* Diamond shape for Critical */
+}
+
+.ui-severity-badge-high .ui-severity-dot {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-bottom: 6px solid var(--severity-high);
+  background-color: transparent !important; /* Triangle shape for High */
+}
+
+.ui-severity-badge-medium .ui-severity-dot {
+  background-color: var(--severity-medium);
+  border-radius: 1px; /* Square shape for Medium */
+}
+
+.ui-severity-badge-low .ui-severity-dot {
+  background-color: var(--severity-low);
+  border-radius: 50%; /* Circle shape for Low */
+}
 
 /* Generic Badge */
 .ui-badge {
@@ -262,9 +287,9 @@
 }
 
 .ui-badge-active {
-  color: var(--accent-emerald-text);
-  background-color: var(--accent-emerald-tint);
-  border-color: rgba(5, 150, 105, 0.2);
+  color: var(--accent-cyan-text);
+  background-color: var(--accent-cyan-tint);
+  border-color: var(--accent-blue-border);
   font-weight: 600;
 }
 
@@ -284,9 +309,9 @@
   font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--radius-sm);
-  background-color: var(--severity-high-tint);
-  color: var(--severity-high-text);
-  border: 1px solid rgba(180, 83, 9, 0.25);
+  background-color: var(--sev-high-bg);
+  color: var(--sev-high-text);
+  border: 1px solid var(--sev-high-border);
   font-family: var(--font-ui);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -302,7 +327,7 @@
 }
 
 .ui-status-dot-online {
-  background-color: var(--accent-emerald);
+  background-color: var(--status-online);
 }
 
 .ui-status-dot-offline {
@@ -324,7 +349,7 @@
   justify-content: center;
   gap: var(--space-2);
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: var(--text-13);
   font-weight: 600;
   cursor: pointer;
@@ -343,14 +368,14 @@
 }
 
 .ui-btn-primary {
-  background-color: var(--accent-emerald);
-  color: #FFFFFF;
-  border-color: var(--accent-emerald);
+  background-color: var(--accent-cyan);
+  color: var(--text-inverse);
+  border-color: var(--accent-cyan);
 }
 
 .ui-btn-primary:hover:not(:disabled) {
-  background-color: var(--accent-emerald-hover);
-  border-color: var(--accent-emerald-hover);
+  background-color: var(--accent-cyan-hover);
+  border-color: var(--accent-cyan-hover);
 }
 
 .ui-btn-secondary {
@@ -374,24 +399,25 @@
 }
 
 .ui-btn-danger {
-  background-color: var(--severity-critical-tint);
-  border-color: rgba(220, 38, 38, 0.25);
-  color: var(--severity-critical);
+  background-color: var(--sev-critical-bg);
+  border-color: var(--sev-critical-border);
+  color: var(--sev-critical-text);
 }
 
 .ui-btn-danger:hover:not(:disabled) {
-  background-color: #FCDCDC;
+  background-color: var(--sev-critical-bg);
+  filter: brightness(0.96);
 }
 
 .ui-btn-sm {
   padding: 5px 10px;
   font-size: var(--text-12);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .ui-btn-icon {
   padding: 7px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-muted);
 }
 
@@ -400,7 +426,7 @@
   color: var(--text-primary);
 }
 
-/* 6. DataTable (Light card, 16px radius, #F3F6F9 header, row hover #F7F9FB) */
+/* 6. DataTable (Dark navy card, 8px radius, #121B2F header, row hover #172238) */
 .ui-table-container {
   width: 100%;
   max-width: 100%;
@@ -456,11 +482,11 @@
 }
 
 .ui-table tbody tr:hover {
-  background-color: #F7F9FB;
+  background-color: var(--bg-hover);
 }
 
 .ui-table tbody tr.selected {
-  background-color: var(--accent-emerald-tint);
+  background-color: var(--accent-cyan-tint);
 }
 
 .ui-table-pagination {
@@ -559,7 +585,7 @@
 .ui-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.35);
+  background: var(--modal-backdrop);
   backdrop-filter: var(--overlay-backdrop);
   z-index: 1000;
   display: flex;
@@ -602,7 +628,7 @@
 .ui-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--modal-backdrop);
   backdrop-filter: var(--overlay-backdrop);
   z-index: 1000;
   display: flex;
@@ -686,33 +712,50 @@
   display: inline-flex;
 }
 
+.ui-tooltip-wrapper:focus-visible {
+  outline: 2px solid var(--accent-emerald);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .ui-tooltip {
   position: absolute;
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  background-color: #0F172A;
-  color: #FFFFFF;
-  border-radius: 6px;
+  background-color: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-sm);
   padding: 4px 8px;
   font-size: var(--text-12);
   white-space: nowrap;
   pointer-events: none;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* Planned Feature Badge Container */
+.ui-planned-chip-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background-color: var(--bg-raised);
+  border: 1px dashed var(--border-subtle-color);
+  border-radius: var(--radius-sm);
 }
 
 /* 13. Skeleton (Light Shimmer) */
 .ui-skeleton {
   background: linear-gradient(
     90deg,
-    #EEF2F6 25%,
-    #E2E8F0 50%,
-    #EEF2F6 75%
+    var(--bg-raised) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-raised) 75%
   );
   background-size: 200% 100%;
   animation: skeletonShimmer 1.8s infinite;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 @keyframes skeletonShimmer {
@@ -759,8 +802,8 @@
   padding: var(--space-6) var(--space-4);
   text-align: center;
   gap: var(--space-2);
-  background-color: var(--severity-critical-tint);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background-color: var(--sev-critical-bg);
+  border: 1px solid var(--sev-critical-border);
   border-radius: var(--radius-md);
 }
 
@@ -771,7 +814,7 @@
 .ui-error-title {
   font-size: var(--text-14);
   font-weight: 600;
-  color: var(--severity-critical);
+  color: var(--severity-critical-text);
   margin: 0;
 }
 
@@ -782,14 +825,14 @@
   margin: 0;
 }
 
-/* 16. CodeText (JetBrains Mono on light) */
+/* 16. CodeText (JetBrains Mono on dark navy) */
 .ui-code-text {
   font-family: var(--font-mono);
   font-size: var(--text-12);
   background-color: var(--bg-raised);
   border: 1px solid var(--border-subtle-color);
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -807,7 +850,7 @@
 }
 
 .ui-code-copy-btn:hover {
-  color: var(--accent-emerald);
+  color: var(--accent-cyan);
 }
 
 /* 17. Toast */
@@ -817,7 +860,7 @@
   right: var(--space-5);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-strong-color);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
   display: flex;
   align-items: center;

@@ -18,7 +18,8 @@ import {
   Settings,
   RefreshCw,
   X,
-  AlertCircle
+  AlertCircle,
+  BarChart3
 } from 'lucide-react';
 import {
   MockDataBadge,
@@ -28,7 +29,8 @@ import {
   CommandPalette,
   CommandItem,
   Drawer,
-  Modal
+  Modal,
+  Tooltip
 } from '../ui';
 import { useMediaQuery } from '../../hooks';
 import { api } from '../../services/api';
@@ -59,6 +61,7 @@ const navigationGroups: NavGroup[] = [
   {
     group: 'Analyze',
     items: [
+      { to: '/dashboard/analytics', label: 'Analytics', icon: <BarChart3 size={19} /> },
       { to: '/dashboard/graph', label: 'Threat Graph', icon: <Network size={19} /> },
       { to: '/dashboard/ml', label: 'ML Intelligence', icon: <Cpu size={19} />, isMock: true },
       { to: '/dashboard/iocs', label: 'IOC Explorer', icon: <Key size={19} /> },
@@ -68,7 +71,7 @@ const navigationGroups: NavGroup[] = [
   {
     group: 'Work',
     items: [
-      { to: '/dashboard/investigation', label: 'Investigations', icon: <FolderGit2 size={19} /> },
+      { to: '/dashboard/investigation', label: 'Investigation', icon: <FolderGit2 size={19} /> },
       { to: '/dashboard/reports', label: 'Reports', icon: <FileText size={19} /> },
       { to: '/dashboard/sources', label: 'Sources', icon: <Database size={19} />, count: 2 }
     ]
@@ -82,37 +85,50 @@ export const DashboardLayout: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [alertBannerDismissed, setAlertBannerDismissed] = useState(false);
-  const [criticalThreat, setCriticalThreat] = useState<{ id: string; cveId: string; title: string; cvssScore: number } | null>(null);
+  const [criticalThreat, setCriticalThreat] = useState<{
+    id: string;
+    cveId: string;
+    title: string;
+    cvssScore: number;
+    date: string;
+    isRecent: boolean;
+  } | null>(null);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [threatCount, setThreatCount] = useState<number>(15);
   const [lastSyncTime, setLastSyncTime] = useState<string>('Just now');
   const [syncing, setSyncing] = useState(false);
+  const [syncConfirmOpen, setSyncConfirmOpen] = useState(false);
+  const [syncErrorModal, setSyncErrorModal] = useState<string | null>(null);
 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Periodic health check to live Flask backend via Vite proxy
+  // Periodic health check to live Flask backend with exponential backoff when offline
   useEffect(() => {
     let mounted = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let offlineFailures = 0;
+
     const checkHealth = async () => {
-      try {
-        const res = await fetch('/api/health');
-        if (mounted) {
-          setApiOnline(res.ok);
-        }
-      } catch {
-        if (mounted) {
-          setApiOnline(false);
-        }
+      const status = await api.getHealth();
+      if (!mounted) return;
+      setApiOnline(status.online);
+
+      if (status.online) {
+        offlineFailures = 0;
+        timer = setTimeout(checkHealth, 30000);
+      } else {
+        offlineFailures++;
+        const backoffDelay = Math.min(240000, 30000 * Math.pow(2, offlineFailures));
+        timer = setTimeout(checkHealth, backoffDelay);
       }
     };
 
     checkHealth();
-    const interval = setInterval(checkHealth, 30000);
     return () => {
       mounted = false;
-      clearInterval(interval);
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
@@ -126,11 +142,18 @@ export const DashboardLayout: React.FC = () => {
         setThreatCount(threats.length);
         const topCrit = threats.find(t => t.cvssScore !== null && t.cvssScore !== undefined && t.cvssScore >= 9.0);
         if (topCrit) {
+          const rawDate = topCrit.collectedAt || topCrit.published || topCrit.timestamp;
+          const time = rawDate ? new Date(rawDate).getTime() : NaN;
+          const isRecent = !isNaN(time) && (Date.now() - time < 30 * 24 * 3600 * 1000);
+          const dateFormatted = rawDate ? rawDate.slice(0, 10) : 'Date unrecorded';
+
           setCriticalThreat({
             id: topCrit.id,
             cveId: topCrit.cveId,
             title: topCrit.title,
-            cvssScore: topCrit.cvssScore ?? 9.0
+            cvssScore: topCrit.cvssScore ?? 9.0,
+            date: dateFormatted,
+            isRecent
           });
         } else {
           setCriticalThreat(null);
@@ -140,27 +163,55 @@ export const DashboardLayout: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // Sync button handler
-  const handleManualSync = async () => {
+  // Open confirmation dialog before collection
+  const handleManualSync = () => {
+    if (syncing) return;
+    setSyncConfirmOpen(true);
+  };
+
+  // Confirmed collection action: calls both real endpoints with timeout & before/after verification
+  const performSync = async () => {
+    setSyncConfirmOpen(false);
     setSyncing(true);
+    setSyncErrorModal(null);
+    api.resetBackoff();
     try {
+      const collectionResult = await api.triggerFullCollection();
+
       const res = await api.getThreats();
       const threats = res.data || [];
       setThreatCount(threats.length);
       const topCrit = threats.find(t => t.cvssScore !== null && t.cvssScore !== undefined && t.cvssScore >= 9.0);
       if (topCrit) {
+        const rawDate = topCrit.collectedAt || topCrit.published || topCrit.timestamp;
+        const time = rawDate ? new Date(rawDate).getTime() : NaN;
+        const isRecent = !isNaN(time) && (Date.now() - time < 30 * 24 * 3600 * 1000);
+        const dateFormatted = rawDate ? rawDate.slice(0, 10) : 'Date unrecorded';
+
         setCriticalThreat({
           id: topCrit.id,
           cveId: topCrit.cveId,
           title: topCrit.title,
-          cvssScore: topCrit.cvssScore ?? 9.0
+          cvssScore: topCrit.cvssScore ?? 9.0,
+          date: dateFormatted,
+          isRecent
         });
       } else {
         setCriticalThreat(null);
       }
-      setLastSyncTime('Just now');
-    } catch {
-      // fallback
+
+      if (collectionResult.unconfirmed) {
+        setLastSyncTime('Collection status unconfirmed');
+        setSyncErrorModal(`Collection status unconfirmed:\n\n• ${collectionResult.errors.join('\n• ')}`);
+      } else if (collectionResult.errors.length > 0) {
+        setLastSyncTime(`Partial sync (${collectionResult.errors.length} err)`);
+        setSyncErrorModal(`Telemetry ingestion encountered errors:\n\n• ${collectionResult.errors.join('\n• ')}`);
+      } else {
+        setLastSyncTime('Just now');
+      }
+    } catch (err: any) {
+      setLastSyncTime('Sync failed');
+      setSyncErrorModal(`Telemetry ingestion failed: ${err?.message || 'Flask backend service unreachable.'}`);
     } finally {
       setTimeout(() => setSyncing(false), 800);
     }
@@ -197,14 +248,15 @@ export const DashboardLayout: React.FC = () => {
   const commands: CommandItem[] = [
     { id: 'c-overview', title: 'Executive Overview', category: 'Navigation', onSelect: () => navigate('/dashboard') },
     { id: 'c-feed', title: 'Live Threat Feed', category: 'Navigation', onSelect: () => navigate('/dashboard/feed') },
+    { id: 'c-alerts', title: 'Security Alerts', category: 'Navigation', onSelect: () => navigate('/dashboard/alerts') },
+    { id: 'c-analytics', title: 'Analytics & Trends', category: 'Navigation', onSelect: () => navigate('/dashboard/analytics') },
     { id: 'c-graph', title: 'Threat Intelligence Graph', category: 'Navigation', onSelect: () => navigate('/dashboard/graph') },
     { id: 'c-ml', title: 'ML Intelligence', category: 'Navigation', onSelect: () => navigate('/dashboard/ml') },
     { id: 'c-iocs', title: 'IOC Explorer', category: 'Navigation', onSelect: () => navigate('/dashboard/iocs') },
     { id: 'c-campaigns', title: 'Adversary Campaigns', category: 'Navigation', onSelect: () => navigate('/dashboard/campaigns') },
     { id: 'c-investigation', title: 'Investigation Workspace', category: 'Navigation', onSelect: () => navigate('/dashboard/investigation') },
-    { id: 'c-sources', title: 'Intelligence Sources', category: 'Navigation', onSelect: () => navigate('/dashboard/sources') },
-    { id: 'c-alerts', title: 'View Active Alerts', category: 'Navigation', onSelect: () => navigate('/dashboard/alerts') },
     { id: 'c-reports', title: 'Generate Briefing Reports', category: 'Navigation', onSelect: () => navigate('/dashboard/reports') },
+    { id: 'c-sources', title: 'Intelligence Sources', category: 'Navigation', onSelect: () => navigate('/dashboard/sources') },
     { id: 'c-sync', title: 'Trigger Manual Feed Sync', category: 'Action', shortcut: 'Ctrl+R', onSelect: handleManualSync },
     { id: 'c-settings', title: 'Open SOC Environment Settings', category: 'Action', onSelect: () => setSettingsOpen(true) }
   ];
@@ -218,11 +270,11 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Emergency Critical Alert Banner - Only renders when real CVSS >= 9.0 threat exists */}
       {!alertBannerDismissed && criticalThreat && (
-        <aside className="emergency-alert-banner" role="alert">
+        <aside className={`emergency-alert-banner ${criticalThreat.isRecent ? 'critical' : 'calm'}`} role="alert">
           <div className="emergency-alert-content">
-            <AlertCircle size={15} style={{ flexShrink: 0 }} />
+            <AlertCircle size={15} style={{ flexShrink: 0, color: criticalThreat.isRecent ? 'var(--alert-banner-text)' : 'var(--severity-high)' }} />
             <span>
-              <strong>CRITICAL ESCALATION:</strong> {criticalThreat.id} ({criticalThreat.cveId}) — {criticalThreat.title} [CVSS {criticalThreat.cvssScore.toFixed(1)}]
+              <strong>{criticalThreat.isRecent ? 'CRITICAL ESCALATION' : 'HIGHEST-SEVERITY RECORD'} [{criticalThreat.date}]:</strong> {criticalThreat.id} ({criticalThreat.cveId}) — {criticalThreat.title} [CVSS {criticalThreat.cvssScore.toFixed(1)}]
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -236,7 +288,8 @@ export const DashboardLayout: React.FC = () => {
             <button
               type="button"
               onClick={() => setAlertBannerDismissed(true)}
-              style={{ background: 'none', border: 'none', color: '#FFFFFF', cursor: 'pointer', padding: '2px', display: 'flex' }}
+              className="emergency-alert-close-btn"
+              style={{ background: 'none', border: 'none', color: criticalThreat.isRecent ? 'var(--alert-banner-text)' : 'var(--alert-calm-text)', cursor: 'pointer', padding: '2px', display: 'flex' }}
               aria-label="Dismiss escalation alert"
             >
               <X size={15} />
@@ -247,7 +300,7 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Body Wrapper (Sidebar + Main) */}
       <div className="dashboard-body-wrapper">
-        {/* Tinted Sidebar (#F1F4F7) */}
+        {/* Tinted Sidebar */}
         <aside className={`dashboard-sidebar ${collapsed ? 'collapsed' : ''}`} aria-label="Sidebar navigation">
           <div className="sidebar-header">
             <NavLink to="/" className="sidebar-brand" title="CyberNexus">
@@ -314,7 +367,7 @@ export const DashboardLayout: React.FC = () => {
 
         {/* Main Content Area */}
         <div className="dashboard-main">
-          {/* Top Bar (White, 64px tall, 1px bottom border #E3E8EE) */}
+          {/* Top Bar */}
           <header className="dashboard-topbar" role="banner">
             <div className="topbar-left">
               {isMobile && (
@@ -362,17 +415,26 @@ export const DashboardLayout: React.FC = () => {
             </div>
 
             <div className="topbar-right">
-              {/* Manual refresh action */}
-              <Button
-                size="sm"
-                variant="ghost"
-                icon={<RefreshCw size={13} className={syncing ? 'spin' : ''} />}
-                onClick={handleManualSync}
-                disabled={syncing}
-                title={`Last collection: ${lastSyncTime}. Click to re-sync.`}
+              {/* Manual refresh action with Tooltip */}
+              <Tooltip
+                content={
+                  syncing
+                    ? 'Disabled: Telemetry synchronization in progress (polling NVD & GitHub).'
+                    : `Last collection: ${lastSyncTime}. Click to trigger live NVD and GitHub sync.`
+                }
               >
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lastSyncTime}</span>
-              </Button>
+                <div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={<RefreshCw size={13} className={syncing ? 'spin' : ''} />}
+                    onClick={handleManualSync}
+                    disabled={syncing}
+                  >
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lastSyncTime}</span>
+                  </Button>
+                </div>
+              </Tooltip>
 
               {/* Notifications Bell */}
               <IconButton
@@ -489,6 +551,57 @@ export const DashboardLayout: React.FC = () => {
               All synthetic indicators (MITRE correlations, confidence scores, cluster attributions) carry the <MockDataBadge /> badge. No unverified estimates are presented as real telemetry.
             </p>
           </div>
+        </div>
+      </Modal>
+
+      {/* Telemetry Ingestion Confirm Modal */}
+      <Modal
+        isOpen={syncConfirmOpen}
+        onClose={() => setSyncConfirmOpen(false)}
+        title="Confirm Telemetry Ingestion"
+        footer={
+          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+            <Button variant="ghost" size="sm" onClick={() => setSyncConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={performSync}>
+              Confirm & Collect
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: 'var(--text-13)', color: 'var(--text-secondary)' }}>
+          <p style={{ margin: 0, lineHeight: 1.5 }}>
+            This action triggers external polling against the live upstream APIs:
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', lineHeight: 1.6 }}>
+            <li><strong>National Vulnerability Database:</strong> <code>POST /api/collect/nvd</code></li>
+            <li><strong>GitHub Advisory Database:</strong> <code>POST /api/collect/github</code></li>
+          </ul>
+          <p style={{ margin: 0, fontSize: 'var(--text-12)', color: 'var(--text-muted)' }}>
+            Each collector call enforces an automated 90-second timeout with fallback verification. Ingested records will automatically normalize into the active threat feed.
+          </p>
+        </div>
+      </Modal>
+
+      {/* Telemetry Ingestion Error Diagnostics Modal */}
+      <Modal
+        isOpen={Boolean(syncErrorModal)}
+        onClose={() => setSyncErrorModal(null)}
+        title="Telemetry Collection Diagnostics"
+        footer={
+          <Button variant="primary" size="sm" onClick={() => setSyncErrorModal(null)}>
+            Acknowledge
+          </Button>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div style={{ padding: 'var(--space-3)', background: 'var(--severity-critical-tint)', border: '1px solid var(--severity-critical)', borderRadius: 'var(--radius-sm)', color: 'var(--severity-critical-text)', fontSize: 'var(--text-13)', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)' }}>
+            {syncErrorModal}
+          </div>
+          <p style={{ margin: 0, fontSize: 'var(--text-12)', color: 'var(--text-secondary)' }}>
+            Verify that the Flask server is running on port 5000 and that upstream rate limits have not been reached.
+          </p>
         </div>
       </Modal>
 

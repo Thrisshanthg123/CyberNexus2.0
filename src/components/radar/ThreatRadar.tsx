@@ -13,6 +13,8 @@ export interface ThreatRadarProps {
   onRetry?: () => void;
   onBlipClick?: (threatId: string) => void;
   className?: string;
+  showLegend?: boolean;
+  showCaption?: boolean;
 }
 
 // React.memo marker component for high performance rendering without sweep re-renders
@@ -23,6 +25,7 @@ interface RadarMarkerProps {
 }
 
 const RadarMarker = memo<RadarMarkerProps>(({ blip, onHover, onClick }) => {
+  const r = blip.markerRadius;
   return (
     <g
       className="radar-marker"
@@ -51,15 +54,49 @@ const RadarMarker = memo<RadarMarkerProps>(({ blip, onHover, onClick }) => {
           fill="none"
         />
       )}
-      <circle
-        cx={0}
-        cy={0}
-        r={blip.markerRadius}
-        fill={blip.color}
-        stroke="#060A12"
-        strokeWidth={1.5}
-        className="radar-marker-dot"
-      />
+      {/* Dual visual encoding: shape + color cue per severity tier */}
+      {blip.severity === 'critical' && (
+        <polygon
+          points={`0,${-r * 1.3} ${r * 1.3},0 0,${r * 1.3} ${-r * 1.3},0`}
+          fill={blip.color}
+          stroke="var(--radar-blip-stroke)"
+          strokeWidth={1.5}
+          className="radar-marker-dot"
+        />
+      )}
+      {blip.severity === 'high' && (
+        <polygon
+          points={`0,${-r * 1.3} ${r * 1.15},${r * 0.9} ${-r * 1.15},${r * 0.9}`}
+          fill={blip.color}
+          stroke="var(--radar-blip-stroke)"
+          strokeWidth={1.5}
+          className="radar-marker-dot"
+        />
+      )}
+      {blip.severity === 'medium' && (
+        <rect
+          x={-r * 0.9}
+          y={-r * 0.9}
+          width={r * 1.8}
+          height={r * 1.8}
+          rx={1.5}
+          fill={blip.color}
+          stroke="var(--severity-medium-outline)"
+          strokeWidth={1}
+          className="radar-marker-dot"
+        />
+      )}
+      {blip.severity === 'low' && (
+        <circle
+          cx={0}
+          cy={0}
+          r={r}
+          fill={blip.color}
+          stroke="var(--radar-blip-stroke)"
+          strokeWidth={1.5}
+          className="radar-marker-dot"
+        />
+      )}
     </g>
   );
 });
@@ -72,7 +109,9 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
   error = null,
   onRetry,
   onBlipClick,
-  className = ''
+  className = '',
+  showLegend = true,
+  showCaption = true,
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -188,7 +227,7 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
           </defs>
 
           {/* Background circle */}
-          <circle cx={cx} cy={cy} r={maxRadius} fill="rgba(12, 19, 34, 0.6)" />
+          <circle cx={cx} cy={cy} r={maxRadius} fill="var(--radar-surface)" />
           <circle cx={cx} cy={cy} r={maxRadius * 0.3} fill="url(#radarCenterGlow)" />
 
           {/* Range rings */}
@@ -292,34 +331,50 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
       </div>
 
       {/* Legend & Abstract Layout Disclaimer */}
-      <div className="radar-legend">
-        <div className="radar-legend-items">
-          <div className="radar-legend-item">
-            <span className="radar-legend-dot" style={{ backgroundColor: 'var(--severity-critical)' }} />
-            <span>Critical (CVSS 9.0+)</span>
-          </div>
-          <div className="radar-legend-item">
-            <span className="radar-legend-dot" style={{ backgroundColor: 'var(--severity-high)' }} />
-            <span>High (7.0 - 8.9)</span>
-          </div>
-          <div className="radar-legend-item">
-            <span className="radar-legend-dot" style={{ backgroundColor: 'var(--severity-medium)' }} />
-            <span>Medium (4.0 - 6.9)</span>
-          </div>
-          <div className="radar-legend-item">
-            <span className="radar-legend-dot" style={{ backgroundColor: 'var(--severity-low)' }} />
-            <span>Low (0.1 - 3.9)</span>
-          </div>
-          <div className="radar-legend-item">
-            <span className="radar-legend-dot" style={{ backgroundColor: 'transparent', border: '1px dashed var(--text-muted)' }} />
-            <span>Unscored</span>
-          </div>
-        </div>
+      {(showLegend || showCaption) && (
+        <div className="radar-legend">
+          {showLegend && (
+            <div className="radar-legend-items">
+              <div className="radar-legend-item">
+                <svg width="12" height="12" viewBox="-6 -6 12 12" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <polygon points="0,-5 5,0 0,5 -5,0" fill="var(--severity-critical)" stroke="var(--radar-blip-stroke)" strokeWidth="1" />
+                </svg>
+                <span>Critical (CVSS 9.0+)</span>
+              </div>
+              <div className="radar-legend-item">
+                <svg width="12" height="12" viewBox="-6 -6 12 12" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <polygon points="0,-5 5,4 -5,4" fill="var(--severity-high)" stroke="var(--radar-blip-stroke)" strokeWidth="1" />
+                </svg>
+                <span>High (7.0 - 8.9)</span>
+              </div>
+              <div className="radar-legend-item">
+                <svg width="12" height="12" viewBox="-6 -6 12 12" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <rect x="-4" y="-4" width="8" height="8" rx="1" fill="var(--severity-medium)" stroke="var(--radar-blip-stroke)" strokeWidth="1" />
+                </svg>
+                <span>Medium (4.0 - 6.9)</span>
+              </div>
+              <div className="radar-legend-item">
+                <svg width="12" height="12" viewBox="-6 -6 12 12" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="0" cy="0" r="4.5" fill="var(--severity-low)" stroke="var(--radar-blip-stroke)" strokeWidth="1" />
+                </svg>
+                <span>Low (0.1 - 3.9)</span>
+              </div>
+              <div className="radar-legend-item">
+                <svg width="12" height="12" viewBox="-6 -6 12 12" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="0" cy="0" r="4.5" fill="none" stroke="var(--text-muted)" strokeWidth="1" strokeDasharray="2 2" />
+                </svg>
+                <span>Unscored</span>
+              </div>
+            </div>
+          )}
 
-        <p className="radar-abstract-disclaimer">
-          <strong>Abstract layout</strong> — non-spatial intelligence projection. Angle indicates ingestion sector (NVD / GitHub / Unclassified). Radial distance is CVSS-derived (provisional); missing CVSS is mapped to the unscored outer ring.
-        </p>
-      </div>
+          {showCaption && (
+            <p className="radar-abstract-disclaimer">
+              <strong>Abstract layout</strong> — non-spatial intelligence projection. Angle indicates ingestion sector (NVD / GitHub / Unclassified). Radial distance is CVSS-derived (provisional); missing CVSS is mapped to the unscored outer ring.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Blip Investigation Drawer */}
       <Drawer

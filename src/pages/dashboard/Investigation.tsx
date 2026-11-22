@@ -5,7 +5,7 @@ import {
   Trash2,
   ExternalLink
 } from 'lucide-react';
-import { Panel, Badge, Button, Modal } from '../../components/ui';
+import { Panel, Badge, Button, Modal, Tooltip } from '../../components/ui';
 import { investigationStore, InvestigationCase } from '../../services/investigationStore';
 
 export const InvestigationPage: React.FC = () => {
@@ -261,9 +261,25 @@ export const InvestigationPage: React.FC = () => {
                       outline: 'none'
                     }}
                   />
-                  <Button variant="secondary" onClick={handleAddNote} style={{ fontSize: 'var(--text-xs)' }}>
-                    Add Note
-                  </Button>
+                  <Tooltip
+                    content={
+                      !newNoteText.trim()
+                        ? 'Note content cannot be empty'
+                        : 'Append note to investigation timeline.'
+                    }
+                  >
+                    <div>
+                      <Button
+                        variant="secondary"
+                        onClick={handleAddNote}
+                        disabled={!newNoteText.trim()}
+                        aria-disabled={!newNoteText.trim() ? 'true' : undefined}
+                        style={{ fontSize: 'var(--text-12)' }}
+                      >
+                        Add Note
+                      </Button>
+                    </div>
+                  </Tooltip>
                 </div>
               </div>
             </Panel>
@@ -279,7 +295,7 @@ export const InvestigationPage: React.FC = () => {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div>
-            <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: 'var(--text-12)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               Case Title / Incident Scope
             </label>
             <input
@@ -290,12 +306,12 @@ export const InvestigationPage: React.FC = () => {
               onChange={e => setNewCaseTitle(e.target.value)}
               style={{
                 width: '100%',
-                background: 'var(--color-raised)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-chip)',
+                background: 'var(--bg-raised)',
+                border: 'var(--border-subtle)',
+                borderRadius: 'var(--radius-input)',
                 padding: 'var(--space-2) var(--space-3)',
-                color: 'var(--color-text)',
-                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+                fontSize: 'var(--text-14)',
                 outline: 'none'
               }}
             />
@@ -305,9 +321,24 @@ export const InvestigationPage: React.FC = () => {
             <Button variant="outline" onClick={() => setNewCaseModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleCreateCase} disabled={!newCaseTitle.trim()}>
-              Create Case File
-            </Button>
+            <Tooltip
+              content={
+                !newCaseTitle.trim()
+                  ? 'Case title cannot be empty'
+                  : 'Create new investigation case dossier.'
+              }
+            >
+              <div>
+                <Button
+                  variant="primary"
+                  onClick={handleCreateCase}
+                  disabled={!newCaseTitle.trim()}
+                  aria-disabled={!newCaseTitle.trim() ? 'true' : undefined}
+                >
+                  Create Case File
+                </Button>
+              </div>
+            </Tooltip>
           </div>
         </div>
       </Modal>

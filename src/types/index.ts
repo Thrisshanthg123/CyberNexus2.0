@@ -26,6 +26,7 @@ export interface Threat {
   timestamp: string; // ISO 8601
   published?: string;
   lastModified?: string;
+  collectedAt?: string | null; // When ingested into CyberNexus
   // Field requirements from Condition 1:
   // Fields the API doesn't return stay null and render as "Not yet analysed".
   mlClassification: string | null;

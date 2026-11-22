@@ -6,14 +6,15 @@ const routes = [
   '/dashboard',
   '/dashboard/feed',
   '/dashboard/threats/THR-1999-0095',
-  '/dashboard/graph',
-  '/dashboard/ioc',
-  '/dashboard/ml',
-  '/dashboard/campaigns',
+  '/dashboard/alerts',
   '/dashboard/analytics',
-  '/dashboard/sources',
+  '/dashboard/graph',
+  '/dashboard/ml',
+  '/dashboard/iocs',
+  '/dashboard/campaigns',
+  '/dashboard/investigation',
   '/dashboard/reports',
-  '/dashboard/investigations'
+  '/dashboard/sources'
 ];
 
 async function sleep(ms) {
