@@ -21,6 +21,19 @@ const SEVERITY_COLOR_MAP: Record<Severity, string> = {
   low: 'var(--severity-low)'
 };
 
+/**
+ * Shared function mapping CVSS score (0.0 - 10.0) to normalized radar radius (0.15 - 0.95).
+ * Higher CVSS scores plot closer to the radar center (10 -> 0.15, 0 -> 0.85).
+ * null or undefined returns 0.95 (unscored periphery ring).
+ */
+export function cvssToRadius(score: number | null | undefined): number {
+  if (score === null || score === undefined || isNaN(score)) {
+    return 0.95;
+  }
+  const clamped = Math.max(0, Math.min(10, score));
+  return 0.85 - (clamped / 10) * 0.70;
+}
+
 export function useRadarLayout(
   blips: RadarBlip[] | null | undefined,
   options: RadarLayoutOptions
@@ -39,11 +52,11 @@ export function useRadarLayout(
   // Concentric range rings: Critical (10-9), High (8-7), Medium (6-4), Low (3-1), Unscored ring at periphery
   const ringRadii = useMemo(() => {
     return [
-      { label: 'CVSS 9.0 - 10.0 (Critical)', r: maxRadius * 0.22, score: 'Critical' },
-      { label: 'CVSS 7.0 - 8.9 (High)', r: maxRadius * 0.45, score: 'High' },
-      { label: 'CVSS 4.0 - 6.9 (Medium)', r: maxRadius * 0.68, score: 'Medium' },
-      { label: 'CVSS 0.1 - 3.9 (Low)', r: maxRadius * 0.85, score: 'Low' },
-      { label: 'Unscored (Periphery)', r: maxRadius * 0.95, score: 'Unscored' }
+      { label: 'CVSS 9.0 - 10.0 (Critical)', r: maxRadius * cvssToRadius(9.0), score: 'Critical' },
+      { label: 'CVSS 7.0 - 8.9 (High)', r: maxRadius * cvssToRadius(7.0), score: 'High' },
+      { label: 'CVSS 4.0 - 6.9 (Medium)', r: maxRadius * cvssToRadius(4.0), score: 'Medium' },
+      { label: 'CVSS 0.1 - 3.9 (Low)', r: maxRadius * cvssToRadius(0.0), score: 'Low' },
+      { label: 'Unscored (Periphery)', r: maxRadius * cvssToRadius(null), score: 'Unscored' }
     ];
   }, [maxRadius]);
 

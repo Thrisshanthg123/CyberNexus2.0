@@ -383,7 +383,7 @@ export const OverviewPage: React.FC = () => {
                   <th>Title & Context</th>
                   <th style={{ width: '100px' }}>Severity</th>
                   <th style={{ width: '100px' }}>Source</th>
-                  <th style={{ width: '130px' }}>Provisional Score</th>
+                  <th style={{ width: '130px' }}>Risk Score</th>
                   <th style={{ width: '110px', textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
@@ -414,7 +414,9 @@ export const OverviewPage: React.FC = () => {
                     </td>
                     <td>
                       <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--status-warning)' }}>
-                        {threat.cvssScore !== null ? `CVSS ${threat.cvssScore}` : 'Unscored'}
+                        {threat.riskScore !== null
+                          ? (threat.riskScoreProvisional ? `${threat.riskScore} (CVSS x 10, provisional)` : threat.riskScore)
+                          : (threat.cvssScore !== null ? `CVSS ${threat.cvssScore}` : 'Unscored')}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>

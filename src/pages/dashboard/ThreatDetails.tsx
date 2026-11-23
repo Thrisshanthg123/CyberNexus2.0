@@ -118,6 +118,7 @@ export const ThreatDetailsPage: React.FC = () => {
           <span>CVE: <strong style={{ color: 'var(--accent-emerald-text)' }}>{threat.cveId}</strong></span>
           <span>Category: <strong>{threat.category || 'Not provided by source'}</strong></span>
           <span>Source: <strong>{threat.source}</strong></span>
+          <span>Risk Score: <strong>{threat.riskScore !== null ? (threat.riskScoreProvisional ? `${threat.riskScore} (CVSS x 10, provisional)` : `${threat.riskScore}/100`) : 'Not yet analysed'}</strong></span>
           <span>Ingested: <strong>{new Date(threat.timestamp).toLocaleString()}</strong></span>
         </div>
       </Panel>
@@ -222,6 +223,19 @@ export const ThreatDetailsPage: React.FC = () => {
                   {threat.confidence}%
                 </span>
               </div>
+            ) : (
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Not yet analysed
+              </span>
+            )}
+
+            <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+              Risk Score Rating
+            </h4>
+            {threat.riskScore !== null ? (
+              <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--accent-emerald-text)' }}>
+                {threat.riskScoreProvisional ? `${threat.riskScore} (CVSS x 10, provisional)` : `${threat.riskScore}/100`}
+              </span>
             ) : (
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 Not yet analysed

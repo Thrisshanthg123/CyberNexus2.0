@@ -235,7 +235,7 @@ export const LiveFeedPage: React.FC = () => {
                       {threat.title}
                     </div>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
-                      {threat.id} • {threat.cveId} • Source: {threat.source} • {threat.actor}
+                      {threat.id} • {threat.cveId} • Source: {threat.source} • {threat.actor}{threat.riskScore !== null ? ` • Risk: ${threat.riskScoreProvisional ? `${threat.riskScore} (CVSS x 10, provisional)` : `${threat.riskScore}/100`}` : ''}
                     </div>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export const LiveFeedPage: React.FC = () => {
                 {selectedThreat.title}
               </h3>
               <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-small)', fontFamily: 'var(--font-mono)' }}>
-                CVE Reference: <strong>{selectedThreat.cveId}</strong> • Source: {selectedThreat.source}
+                CVE Reference: <strong>{selectedThreat.cveId}</strong> • Source: {selectedThreat.source} • Risk: <strong>{selectedThreat.riskScore !== null ? (selectedThreat.riskScoreProvisional ? `${selectedThreat.riskScore} (CVSS x 10, provisional)` : `${selectedThreat.riskScore}/100`) : 'Not yet analysed'}</strong>
               </div>
             </div>
 

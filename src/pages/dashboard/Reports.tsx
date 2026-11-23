@@ -42,16 +42,20 @@ export const ReportsPage: React.FC = () => {
         medium: filteredThreats.filter(t => t.severity === 'medium').length,
         low: filteredThreats.filter(t => t.severity === 'low').length
       },
-      threats: filteredThreats
+      threats: filteredThreats.map(t => ({
+        ...t,
+        riskScoreBasis: t.riskScoreProvisional ? 'cvss-provisional' : 'model'
+      }))
     };
     return JSON.stringify(reportObj, null, 2);
   };
 
   const generateCsvContent = () => {
-    const header = 'ID,CVE,Title,Severity,Category,Source,Actor,TTP,Confidence,Timestamp\n';
-    const rows = filteredThreats.map(t => 
-      `"${t.id}","${t.cveId}","${t.title.replace(/"/g, '""')}","${t.severity}","${t.category}","${t.source}","${t.actor}","${t.ttp}","${t.confidence}","${t.timestamp}"`
-    ).join('\n');
+    const header = 'ID,CVE,Title,Severity,Category,Source,Actor,TTP,Confidence,Timestamp,RiskScore,RiskScoreBasis\n';
+    const rows = filteredThreats.map(t => {
+      const riskBasis = t.riskScoreProvisional ? 'cvss-provisional' : 'model';
+      return `"${t.id}","${t.cveId}","${t.title.replace(/"/g, '""')}","${t.severity}","${t.category}","${t.source}","${t.actor}","${t.ttp}","${t.confidence}","${t.timestamp}","${t.riskScore ?? ''}","${riskBasis}"`;
+    }).join('\n');
     return header + rows;
   };
 
@@ -241,6 +245,7 @@ export const ReportsPage: React.FC = () => {
                     <th>Source</th>
                     <th>Adversary</th>
                     <th>Confidence</th>
+                    <th>Risk Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -253,6 +258,11 @@ export const ReportsPage: React.FC = () => {
                       <td>{threat.source}</td>
                       <td>{threat.actor}</td>
                       <td className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>{threat.confidence}%</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>
+                        {threat.riskScore !== null
+                          ? (threat.riskScoreProvisional ? `${threat.riskScore} (CVSS x 10, provisional)` : threat.riskScore)
+                          : 'Not yet analysed'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

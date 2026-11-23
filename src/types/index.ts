@@ -32,6 +32,7 @@ export interface Threat {
   mlClassification: string | null;
   confidence: number | null; // null if unanalysed
   riskScore: number | null; // null if unanalysed
+  riskScoreProvisional?: boolean;
   cvssScore?: number | null;
   isProvisionalScore?: boolean; // Set true when derived from CVSS
   iocs: string[] | null; // null if unextracted
@@ -52,6 +53,7 @@ export interface RadarBlip {
   category: ThreatCategory | string;
   confidence: number | null;
   riskScore: number | null;
+  riskScoreProvisional?: boolean;
   radius: number; // 0 to 1 (normalized distance from center based on risk)
   angle: number; // 0 to 360 deg based on category sector
   isPulse: boolean; // Pulsing for recent detections

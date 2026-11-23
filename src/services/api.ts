@@ -23,6 +23,7 @@ import {
   SourceStatus,
   ApiResult
 } from '../types';
+import { cvssToRadius } from '../components/radar/useRadarLayout';
 
 import { mockThreats } from './mock/threats';
 import { mockActivityMatrix, HeatmapCell } from './mock/activityMatrix';
@@ -119,6 +120,7 @@ function normalizeRawThreat(raw: FlaskRawThreat, index: number): Threat {
     mlClassification,
     confidence,
     riskScore,
+    riskScoreProvisional: isProvisional,
     cvssScore: cvss,
     isProvisionalScore: isProvisional,
     iocs,
@@ -299,12 +301,8 @@ export const api = {
       const angle = sectorStart + (((idx * 19) % 100) / 100) * (sectorEnd - sectorStart);
 
       // Distance from center: CVSS-derived (higher CVSS = closer to center)
-      // If cvssScore is null, radius = 0.95 (unscored ring)
-      let radius = 0.95;
-      if (t.cvssScore !== null && t.cvssScore !== undefined) {
-        // CVSS 10 -> radius 0.15, CVSS 0 -> radius 0.85
-        radius = 0.85 - (t.cvssScore / 10) * 0.70;
-      }
+      // Uses shared cvssToRadius so plotted positions align exactly with concentric ring radii
+      const radius = cvssToRadius(t.cvssScore);
 
       // Pulse: real timestamp within recent hours
       const threatTime = new Date(t.timestamp).getTime();
@@ -320,6 +318,7 @@ export const api = {
         category: t.category,
         confidence: t.confidence,
         riskScore: t.riskScore,
+        riskScoreProvisional: t.riskScoreProvisional,
         radius,
         angle,
         isPulse,

@@ -323,8 +323,10 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
             </div>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               {hoveredBlip.riskScore !== null
-                ? `Provisional Score: ${hoveredBlip.riskScore}/100`
-                : 'CVSS-derived (provisional)'}
+                ? (hoveredBlip.riskScoreProvisional
+                    ? `${hoveredBlip.riskScore} (CVSS x 10, provisional)`
+                    : `Risk Score: ${hoveredBlip.riskScore}/100`)
+                : 'Not yet analysed'}
             </div>
           </div>
         )}
@@ -408,9 +410,13 @@ export const ThreatRadar: React.FC<ThreatRadarProps> = ({
               </div>
 
               <div style={{ background: 'var(--bg-raised)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-sm)', border: 'var(--border-subtle)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Provisional Score</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Risk Score</span>
                 <div style={{ fontWeight: 600, color: 'var(--status-warning)', marginTop: '2px' }}>
-                  {selectedBlip.riskScore !== null ? `${selectedBlip.riskScore} / 100` : 'CVSS-derived (provisional)'}
+                  {selectedBlip.riskScore !== null
+                    ? (selectedBlip.riskScoreProvisional
+                        ? `${selectedBlip.riskScore} (CVSS x 10, provisional)`
+                        : `${selectedBlip.riskScore} / 100`)
+                    : 'Not yet analysed'}
                 </div>
               </div>
 
