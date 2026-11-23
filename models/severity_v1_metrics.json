@@ -1,0 +1,58 @@
+{
+  "model_version": "severity_v1",
+  "evaluation_date": "2026-11-23T01:03:28.546212+00:00",
+  "dataset_size": 15,
+  "class_counts": {
+    "High": 11,
+    "Medium": 4
+  },
+  "split_method": "Stratified 4-Fold Cross-Validation (k=4 chosen because minority class has 4 sample(s), guaranteeing each fold has every class)",
+  "labels": [
+    "High",
+    "Medium"
+  ],
+  "model_performance": {
+    "accuracy": 0.4,
+    "macro_f1": 0.2857,
+    "per_class": {
+      "High": {
+        "precision": 0.6,
+        "recall": 0.5455,
+        "f1_score": 0.5714,
+        "support": 11
+      },
+      "Medium": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 4
+      }
+    },
+    "confusion_matrix": [
+      [
+        6,
+        5
+      ],
+      [
+        4,
+        0
+      ]
+    ]
+  },
+  "baseline_performance": {
+    "description": "Naive majority-class baseline (always predicts most frequent class)",
+    "accuracy": 0.7333,
+    "macro_f1": 0.4231,
+    "confusion_matrix": [
+      [
+        11,
+        0
+      ],
+      [
+        4,
+        0
+      ]
+    ]
+  },
+  "interpretation_note": "Model confidence is a statistical output of the classifier on the training distribution, not the probability that a threat is real. Dataset is small (N=15), requiring cross-validation."
+}

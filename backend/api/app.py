@@ -12,6 +12,7 @@ app = Flask(
     template_folder="../../frontend/templates",
     static_folder="../../frontend/static"
 )
+from backend.api.routes.analysis import analysis_bp; app.register_blueprint(analysis_bp)
 
 
 @app.route("/")

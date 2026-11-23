@@ -1,0 +1,655 @@
+[
+  {
+    "id": "CVE-1999-0095",
+    "source": "NVD",
+    "cve": "CVE-1999-0095",
+    "iocs": {
+      "cves": [
+        "CVE-1999-0095"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.6497,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "root",
+        "attackers",
+        "command",
+        "commands",
+        "execute"
+      ]
+    },
+    "riskScore": 66.4,
+    "riskBreakdown": {
+      "cvssFactor": 1.0,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0128,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13931.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-0082",
+    "source": "NVD",
+    "cve": "CVE-1999-0082",
+    "iocs": {
+      "cves": [
+        "CVE-1999-0082"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.6115,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "root",
+        "access",
+        "command",
+        "cve",
+        "nvd"
+      ]
+    },
+    "riskScore": 66.4,
+    "riskBreakdown": {
+      "cvssFactor": 1.0,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0128,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13890.8
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-1471",
+    "source": "NVD",
+    "cve": "CVE-1999-1471",
+    "iocs": {
+      "cves": [
+        "CVE-1999-1471"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.576,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "root",
+        "buffer",
+        "buffer overflow",
+        "long",
+        "overflow"
+      ]
+    },
+    "riskScore": 56.6,
+    "riskBreakdown": {
+      "cvssFactor": 0.72,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0128,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13839.8
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-1122",
+    "source": "NVD",
+    "cve": "CVE-1999-1122",
+    "iocs": {
+      "cves": [
+        "CVE-1999-1122"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "Medium",
+      "confidence": 0.5374,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "earlier allows",
+        "gain privileges",
+        "users gain",
+        "earlier",
+        "sunos"
+      ]
+    },
+    "riskScore": 41.3,
+    "riskBreakdown": {
+      "cvssFactor": 0.46,
+      "severityFactor": 0.5,
+      "recencyFactor": 0.013,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13633.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-1467",
+    "source": "NVD",
+    "cve": "CVE-1999-1467",
+    "iocs": {
+      "cves": [
+        "CVE-1999-1467"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5998,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "root",
+        "attackers",
+        "commands",
+        "execute",
+        "remote attackers"
+      ]
+    },
+    "riskScore": 66.4,
+    "riskBreakdown": {
+      "cvssFactor": 1.0,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0131,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13541.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-1506",
+    "source": "NVD",
+    "cve": "CVE-1999-1506",
+    "iocs": {
+      "cves": [
+        "CVE-1999-1506"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5634,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "access",
+        "attackers",
+        "sendmail",
+        "remote attackers",
+        "sunos allows"
+      ]
+    },
+    "riskScore": 57.7,
+    "riskBreakdown": {
+      "cvssFactor": 0.75,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0132,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13446.8
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-0084",
+    "source": "NVD",
+    "cve": "CVE-1999-0084",
+    "iocs": {
+      "cves": [
+        "CVE-1999-0084"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5509,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "device",
+        "allow",
+        "creating",
+        "setting",
+        "use"
+      ]
+    },
+    "riskScore": 60.8,
+    "riskBreakdown": {
+      "cvssFactor": 0.84,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0133,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13354.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-2000-0388",
+    "source": "NVD",
+    "cve": "CVE-2000-0388",
+    "iocs": {
+      "cves": [
+        "CVE-2000-0388"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.6015,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "commands",
+        "execute",
+        "execute commands",
+        "buffer",
+        "buffer overflow"
+      ]
+    },
+    "riskScore": 57.7,
+    "riskBreakdown": {
+      "cvssFactor": 0.75,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0133,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13346.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-0209",
+    "source": "NVD",
+    "cve": "CVE-1999-0209",
+    "iocs": {
+      "cves": [
+        "CVE-1999-0209"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "Medium",
+      "confidence": 0.5689,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "files",
+        "read",
+        "allows remote",
+        "users",
+        "allows"
+      ]
+    },
+    "riskScore": 42.7,
+    "riskBreakdown": {
+      "cvssFactor": 0.5,
+      "severityFactor": 0.5,
+      "recencyFactor": 0.0134,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13249.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "CVE-1999-1198",
+    "source": "NVD",
+    "cve": "CVE-1999-1198",
+    "iocs": {
+      "cves": [
+        "CVE-1999-1198"
+      ],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5693,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "root",
+        "gain root",
+        "root privileges",
+        "systems",
+        "does"
+      ]
+    },
+    "riskScore": 56.7,
+    "riskBreakdown": {
+      "cvssFactor": 0.72,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.0135,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.95,
+      "missingCvss": false,
+      "daysSincePublished": 13199.9
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "GHSA-jgh3-fggc-mcpm",
+    "source": "GitHub",
+    "cve": null,
+    "iocs": {
+      "cves": [],
+      "ips": [
+        "169.254.169.254"
+      ],
+      "private_ips": [
+        "169.254.169.254"
+      ],
+      "domains": [
+        "github.com",
+        "www.linkedin.com"
+      ],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5131,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "url",
+        "metadata",
+        "server",
+        "attacker",
+        "oauth"
+      ]
+    },
+    "riskScore": 73.5,
+    "riskBreakdown": {
+      "cvssFactor": 0.75,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.7338,
+      "indicatorFactor": 0.6,
+      "sourceFactor": 0.85,
+      "missingCvss": true,
+      "daysSincePublished": 65.3
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "GHSA-pr6h-vr44-xq8j",
+    "source": "GitHub",
+    "cve": null,
+    "iocs": {
+      "cves": [],
+      "ips": [],
+      "private_ips": [],
+      "domains": [
+        "github.com",
+        "www.linkedin.com"
+      ],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "Medium",
+      "confidence": 0.584,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "v0",
+        "protected",
+        "connect",
+        "unauthenticated",
+        "authentication"
+      ]
+    },
+    "riskScore": 55.5,
+    "riskBreakdown": {
+      "cvssFactor": 0.5,
+      "severityFactor": 0.5,
+      "recencyFactor": 0.7338,
+      "indicatorFactor": 0.4,
+      "sourceFactor": 0.85,
+      "missingCvss": true,
+      "daysSincePublished": 65.3
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "GHSA-xwmw-prc4-v3cr",
+    "source": "GitHub",
+    "cve": null,
+    "iocs": {
+      "cves": [],
+      "ips": [],
+      "private_ips": [],
+      "domains": [
+        "github.com"
+      ],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5872,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "victim",
+        "attacker",
+        "access",
+        "authorization",
+        "client"
+      ]
+    },
+    "riskScore": 67.5,
+    "riskBreakdown": {
+      "cvssFactor": 0.75,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.7338,
+      "indicatorFactor": 0.2,
+      "sourceFactor": 0.85,
+      "missingCvss": true,
+      "daysSincePublished": 65.3
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "GHSA-5gmm-hjfj-8ff7",
+    "source": "GitHub",
+    "cve": "CVE-2026-71537",
+    "iocs": {
+      "cves": [],
+      "ips": [],
+      "private_ips": [],
+      "domains": [],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "Medium",
+      "confidence": 0.6272,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "service",
+        "upgrade",
+        "check",
+        "requests",
+        "condition"
+      ]
+    },
+    "riskScore": 49.5,
+    "riskBreakdown": {
+      "cvssFactor": 0.5,
+      "severityFactor": 0.5,
+      "recencyFactor": 0.7338,
+      "indicatorFactor": 0.0,
+      "sourceFactor": 0.85,
+      "missingCvss": true,
+      "daysSincePublished": 65.3
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  },
+  {
+    "id": "GHSA-9jjc-fw8x-fmwx",
+    "source": "GitHub",
+    "cve": "CVE-2026-85058",
+    "iocs": {
+      "cves": [],
+      "ips": [
+        "0.0.0.0"
+      ],
+      "private_ips": [
+        "0.0.0.0"
+      ],
+      "domains": [
+        "github.com"
+      ],
+      "hashes": {
+        "md5": [],
+        "sha1": [],
+        "sha256": []
+      }
+    },
+    "prediction": {
+      "label": "High",
+      "confidence": 0.5491,
+      "modelVersion": "severity_v1",
+      "topFeatures": [
+        "attacker",
+        "victim",
+        "client",
+        "access",
+        "bypass"
+      ]
+    },
+    "riskScore": 70.5,
+    "riskBreakdown": {
+      "cvssFactor": 0.75,
+      "severityFactor": 0.75,
+      "recencyFactor": 0.7338,
+      "indicatorFactor": 0.4,
+      "sourceFactor": 0.85,
+      "missingCvss": true,
+      "daysSincePublished": 65.3
+    },
+    "riskScoreBasis": "formula-v1",
+    "modelVersion": "severity_v1",
+    "processedAt": "2026-11-23T01:22:39.312673+00:00"
+  }
+]

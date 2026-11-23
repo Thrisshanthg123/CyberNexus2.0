@@ -1,0 +1,42 @@
+[
+  {
+    "indicator": "github.com",
+    "type": "domain",
+    "recordCount": 4,
+    "records": [
+      {
+        "recordId": "GHSA-9jjc-fw8x-fmwx",
+        "source": "GitHub"
+      },
+      {
+        "recordId": "GHSA-jgh3-fggc-mcpm",
+        "source": "GitHub"
+      },
+      {
+        "recordId": "GHSA-pr6h-vr44-xq8j",
+        "source": "GitHub"
+      },
+      {
+        "recordId": "GHSA-xwmw-prc4-v3cr",
+        "source": "GitHub"
+      }
+    ],
+    "analystNote": "Candidate correlation lead for triage; not proof of common threat actor."
+  },
+  {
+    "indicator": "www.linkedin.com",
+    "type": "domain",
+    "recordCount": 2,
+    "records": [
+      {
+        "recordId": "GHSA-jgh3-fggc-mcpm",
+        "source": "GitHub"
+      },
+      {
+        "recordId": "GHSA-pr6h-vr44-xq8j",
+        "source": "GitHub"
+      }
+    ],
+    "analystNote": "Candidate correlation lead for triage; not proof of common threat actor."
+  }
+]
